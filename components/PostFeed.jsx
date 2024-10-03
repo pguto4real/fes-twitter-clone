@@ -1,6 +1,7 @@
 import React from "react";
 
 import TweetInput from "./TweetInput";
+import Tweet from "./Tweet";
 
 const PostFeed = () => {
   return (
@@ -15,6 +16,7 @@ const PostFeed = () => {
         Home
       </div>
       <TweetInput />
+      <Tweet />
     </div>
   );
 };
