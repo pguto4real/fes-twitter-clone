@@ -1,4 +1,12 @@
+import {
+  CalendarIcon,
+  ChartBarIcon,
+  EmojiHappyIcon,
+  LocationMarkerIcon,
+  PhotographIcon,
+} from "@heroicons/react/outline";
 import React from "react";
+import TweetInputIcons from "./TweetInputIcons";
 
 const TweetInput = () => {
   return (
@@ -18,8 +26,19 @@ const TweetInput = () => {
 
         {/*  */}
         <div className="flex justify-between border-t border-gray-700 pt-4">
-          <div>icons</div>
-          <div>button</div>
+          <div className="flex space-x-0">
+            <TweetInputIcons Icon={PhotographIcon} />
+
+            <TweetInputIcons Icon={ChartBarIcon} />
+            <TweetInputIcons Icon={EmojiHappyIcon} />
+            <TweetInputIcons Icon={CalendarIcon} />
+            <TweetInputIcons Icon={LocationMarkerIcon} />
+          </div>
+          <div>
+            <button className=" bg-[#1d9bf0] rounded-full  px-4 py-1.5  ">
+              Tweet
+            </button>
+          </div>
         </div>
       </div>
     </div>
