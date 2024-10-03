@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroicons/react": "^1.0.6",
     "@next/font": "14.2.14",
     "eslint": "8.57.1",
     "eslint-config-next": "14.2.14",
