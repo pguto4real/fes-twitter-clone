@@ -11,7 +11,7 @@ import { useSelector } from "react-redux";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  const userName = useSelector(state=>state.user.username)
+ 
   const user = useSelector(state=>state.user)
 
   return (
@@ -26,7 +26,7 @@ export default function Home() {
         <Trending />
       </div>
       {
-        !userName &&  <BottomBanner />
+        !user.username &&  <BottomBanner />
       }
      
     </div>
