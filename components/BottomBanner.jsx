@@ -1,12 +1,12 @@
 import React from "react";
 
-import { openSignUpModal } from "@/redux/modalSlice";
+import { openLogInModal, openSignUpModal } from "@/redux/modalSlice";
 import { useDispatch } from "react-redux";
 import SignUpModal from "./modals/SignUpModal";
-
+import LogInModal from "./modals/LogInModal";
 
 const BottomBanner = () => {
-    const dispatch = useDispatch()
+  const dispatch = useDispatch();
   return (
     <div className="flex xl:space-x-[200px] justify-center items-center fixed w-full h-[80px] bg-[#1d9bf0] bottom-0">
       <div className="hidden xl:inline text-white">
@@ -16,16 +16,21 @@ const BottomBanner = () => {
         </span>
       </div>
       <div className="space-x-3">
-        <button className="bg-transparent rounded-full border-white border h-10 w-40 
-        text-white  hover:bg-[#cbd2d7]">
+        <button
+          onClick={() => dispatch(openLogInModal())}
+          className="bg-transparent rounded-full border-white border h-10 w-40 
+        text-white  hover:bg-[#cbd2d7]"
+        >
           Log In
         </button>
         <button
-        onClick={()=>dispatch(openSignUpModal())} 
-        className="bg-white rounded-full h-10 w-40 text-black hover:bg-[#cbd2d7]" >
+          onClick={() => dispatch(openSignUpModal())}
+          className="bg-white rounded-full h-10 w-40 text-black hover:bg-[#cbd2d7]"
+        >
           Sign Up
         </button>
-        <SignUpModal/>
+        <SignUpModal />
+        <LogInModal />
       </div>
     </div>
   );

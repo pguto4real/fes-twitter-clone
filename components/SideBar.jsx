@@ -9,16 +9,18 @@ import {
   BellIcon,
   UserIcon,
   DotsCircleHorizontalIcon,
+  BadgeCheckIcon,
+  DotsHorizontalIcon,
 } from "@heroicons/react/outline";
 import Image from "next/image";
 
 const SideBar = () => {
   return (
-    <div className=" xl:ml-24 sm:ml-5 hidden sm:flex flex-col fixed justify-between h-full">
+    <div className=" xl:ml-24  hidden sm:flex flex-col fixed justify-between h-full">
       {/* <Link to='/' className='flex justify-center md:justify-start'>
 					<XSvg className='px-2 w-12 h-12 rounded-full fill-white hover:bg-stone-900' />
 				</Link> */}
-      <div>
+      <div className="mx-auto">
         <nav className="xl:space-y-1.5">
           <div className="xl:justify-start flex justify-center items-center py-3 xl:p-3">
             <Image
@@ -40,7 +42,24 @@ const SideBar = () => {
           </button>
         </nav>
       </div>
-      <div>User</div>
+      <div className="mb-2 ">
+        <div className="p-3 flex justify-between items-center rounded-full hover:bg-white hover:bg-opacity-10 cursor-pointer">
+          <div className="flex space-x-3 items-center ">
+            <img
+              className="w-10 h-10 rounded-full object-cover"
+              src="/assets/avatar-placeholder.png/"
+            />
+            <div className="xl:flex flex-col hidden ">
+              <h1 className="font-bold whitespace-nowrap">Elon Musk</h1>
+
+              <h1 className="text-gray-500 ">@elonMusk</h1>
+            </div>
+          </div>
+          <div className="hidden xl:flex">
+            <DotsHorizontalIcon className="h-5" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

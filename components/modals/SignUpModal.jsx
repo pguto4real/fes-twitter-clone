@@ -1,12 +1,46 @@
+import { auth } from "@/firebase";
 import { closeSignUpModal } from "@/redux/modalSlice";
+import { setUser } from "@/redux/userSlice";
 import Modal from "@mui/material/Modal";
-import React from "react";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+} from "firebase/auth";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function SignUpModal() {
   const isOpen = useSelector((state) => state.modals.signUpModalOpen);
   const dispatch = useDispatch();
 
+  const [email, SetEmail] = useState("");
+  const [password, SetPassword] = useState("");
+
+  async function handleSignUp() {
+    const userCredentials = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+  }
+  useEffect(() => {
+    const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) return;
+      dispatch(
+        setUser({
+          username: currentUser.email.split("@")[0],
+          name: null,
+          email: currentUser.email,
+          uid: currentUser.uid,
+          photoUrl: null,
+        })
+      );
+      //handle redux actions
+
+      console.log(currentUser);
+    });
+    return unSubscribe;
+  }, []);
   return (
     <>
       {/* <Button >Open modal</Button> */}
@@ -43,17 +77,21 @@ export default function SignUpModal() {
                 placeholder="Email"
                 className="placeholder:text-gray-400 bg-transparent rounded-md 
                 border-gray-700 border  h-[40px]  p-6"
+                onChange={(e) => SetEmail(e.target.value)}
               />
               <input
                 type="password"
                 placeholder="Password"
                 className="placeholder:text-gray-400 bg-transparent rounded-md 
                 border-gray-700 border  h-[40px]  p-6"
+                onChange={(e) => SetPassword(e.target.value)}
               />
             </div>
             <button
               className="bg-white text-black w-full font-bold
-            text-lg p-2 mt-8 mb-8 rounded-md" >
+            text-lg p-2 mt-8 mb-8 rounded-md"
+              onClick={handleSignUp}
+            >
               Create Account
             </button>
           </div>
