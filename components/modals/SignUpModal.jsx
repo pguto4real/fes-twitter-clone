@@ -5,15 +5,19 @@ import Modal from "@mui/material/Modal";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  updateProfile,
 } from "firebase/auth";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function SignUpModal() {
   const isOpen = useSelector((state) => state.modals.signUpModalOpen);
   const dispatch = useDispatch();
+  const router = useRouter()
 
   const [email, SetEmail] = useState("");
+  const [name, SetName] = useState("");
   const [password, SetPassword] = useState("");
 
   async function handleSignUp() {
@@ -22,22 +26,30 @@ export default function SignUpModal() {
       email,
       password
     );
+
+    await updateProfile(auth.currentUser, {
+      displayName: name,
+      photoURL: `/assets/avatar-placeholder.png/`,
+    });
+    router.reload()
   }
   useEffect(() => {
+
     const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
+     
       if (!currentUser) return;
       dispatch(
         setUser({
           username: currentUser.email.split("@")[0],
-          name: null,
+          name: currentUser.displayName,
           email: currentUser.email,
           uid: currentUser.uid,
-          photoUrl: null,
+          photoUrl: currentUser.photoURL,
         })
       );
       //handle redux actions
 
-      console.log(currentUser);
+     
     });
     return unSubscribe;
   }, []);
@@ -71,6 +83,7 @@ export default function SignUpModal() {
                 placeholder="Full Name"
                 className="placeholder:text-gray-400 bg-transparent rounded-md 
                 border-gray-700 border  h-[40px] p-6 mt-8"
+                onChange={(e) => SetName(e.target.value)}
               />
               <input
                 type="email"

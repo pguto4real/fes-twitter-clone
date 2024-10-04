@@ -12,7 +12,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   const userName = useSelector(state=>state.user.username)
-  console.log(userName)
+  const user = useSelector(state=>state.user)
+
   return (
     <div>
       <div
