@@ -5,6 +5,7 @@ import Modal from "@mui/material/Modal";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
 import { useRouter } from "next/router";
@@ -14,7 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 export default function SignUpModal() {
   const isOpen = useSelector((state) => state.modals.signUpModalOpen);
   const dispatch = useDispatch();
-  const router = useRouter()
+  const router = useRouter();
 
   const [email, SetEmail] = useState("");
   const [name, SetName] = useState("");
@@ -31,12 +32,17 @@ export default function SignUpModal() {
       displayName: name,
       photoURL: `/assets/avatar-placeholder.png/`,
     });
-    router.reload()
+    router.reload();
+  }
+  async function handleGuestSignIn() {
+    const userCredentials = await signInWithEmailAndPassword(
+      auth,
+      "guest18342681@gmail.com",
+      "12345678"
+    );
   }
   useEffect(() => {
-
     const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
-     
       if (!currentUser) return;
       dispatch(
         setUser({
@@ -48,8 +54,6 @@ export default function SignUpModal() {
         })
       );
       //handle redux actions
-
-     
     });
     return unSubscribe;
   }, []);
@@ -72,6 +76,7 @@ export default function SignUpModal() {
             <button
               className="bg-white text-black w-full font-bold rounded-md
             text-lg p-2 "
+              onClick={handleGuestSignIn}
             >
               Sign In as Guest
             </button>
