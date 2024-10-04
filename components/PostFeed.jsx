@@ -5,7 +5,7 @@ import Tweet from "./Tweet";
 
 const PostFeed = () => {
   return (
-    <div className="sm:ml-20 xl:ml-96 flex-grow border-x-gray-700 border-x max-w-2xl">
+    <div className="sm:ml-20 xl:ml-[350px] flex-grow border-x-gray-700 border-x max-w-2xl">
       <div
         className="px-3 
       py-2 text-lg 

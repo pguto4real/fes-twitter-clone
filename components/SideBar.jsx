@@ -14,7 +14,7 @@ import Image from "next/image";
 
 const SideBar = () => {
   return (
-    <div className=" xl:ml-24 hidden sm:flex flex-col fixed justify-between h-full">
+    <div className=" xl:ml-24 sm:ml-5 hidden sm:flex flex-col fixed justify-between h-full">
       {/* <Link to='/' className='flex justify-center md:justify-start'>
 					<XSvg className='px-2 w-12 h-12 rounded-full fill-white hover:bg-stone-900' />
 				</Link> */}
