@@ -1,19 +1,20 @@
 import React from "react";
+import Moment from "react-moment";
 
-const TweetHeader = () => {
+const TweetHeader = ({ username, name, timestamp, text, photoUrl }) => {
   return (
     <div className="flex space-x-3 p-3 ">
-      <img
-        className="w-11 h-11 rounded-full object-cover"
-        src="/assets/avatar-placeholder.png/"
-      />
+      <img className="w-11 h-11 rounded-full object-cover" src={photoUrl} />
       <div>
         <div className="mb-1 flex space-x-2 items-center text-gray-500">
-          <span>@_pguto</span>
+          <h1 className="text-white font-bold">{name}</h1>
+          <span>@{username}</span>
           <div className="w-1 h-1 rounded-full bg-gray-500"></div>
-          <span>2 hours ago</span>
+          <Moment fromNow>
+           {timestamp}
+          </Moment>
         </div>
-        <span>Text</span>
+        <span>{text}</span>
       </div>
     </div>
   );
