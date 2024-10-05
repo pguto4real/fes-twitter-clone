@@ -6,10 +6,13 @@ import {
   HeartIcon,
   UploadIcon,
 } from "@heroicons/react/outline";
+import { useDispatch } from "react-redux";
+import { openCommentModal } from "@/redux/modalSlice";
 
-const Tweet = ({data}) => {
-  const { username, name, timestamp, tweet,photoUrl } = data;
-  console.log(data)
+const Tweet = ({ data }) => {
+  const { username, name, timestamp, tweet, photoUrl } = data;
+  const dispatch = useDispatch();
+
   return (
     <div className="border-b border-gray-700">
       <TweetHeader
@@ -17,10 +20,12 @@ const Tweet = ({data}) => {
         name={name}
         timestamp={timestamp?.toDate()}
         text={tweet}
-        photoUrl = {photoUrl}
+        photoUrl={photoUrl}
       />
       <div className="p-3 ml-16 text-gray-500 flex space-x-14">
-        <ChatIcon className="w-5 cursor-pointer hover:text-green-400" />
+        <div onClick={() => dispatch(openCommentModal())}>
+          <ChatIcon className="w-5 cursor-pointer hover:text-green-400" />
+        </div>
         <HeartIcon className="w-5 cursor-pointer hover:text-pink-500" />
         <ChartBarIcon className="w-5 cursor-not-allowed" />
         <UploadIcon className="w-5 cursor-not-allowed" />
