@@ -25,8 +25,10 @@ const TweetInput = () => {
 
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   async function sendTweet() {
+    setLoading(true);
     const docRef = await addDoc(collection(db, "posts"), {
       username: user.username,
       name: user.name,
@@ -43,10 +45,12 @@ const TweetInput = () => {
       const imageRef = ref(storage, `tweetImages/${postId}`);
       const uploadImage = await uploadString(imageRef, image, "data_url");
 
-      const downloadUrl = await getDownloadURL(imageRef)
-      await updateDoc(docRef, { image: downloadUrl  });
+      const downloadUrl = await getDownloadURL(imageRef);
+      await updateDoc(docRef, { image: downloadUrl });
     }
     setText("");
+    setImage(null);
+    setLoading(false);
   }
 
   function addImageToTweet(e) {
@@ -65,62 +69,69 @@ const TweetInput = () => {
         src="/assets/avatar-placeholder.png/"
         alt=""
       />
-      <div className="w-full">
-        <textarea
-          name=""
-          id=""
-          className="bg-transparent resize-none outline-none w-full minh-[50px] text-lg"
-          placeholder="What's on you mind?"
-          onChange={(e) => setText(e.target.value)}
-          value={text}
-        />
-        {image && (
-          <div className="relative mb-4">
-            <div
-              className="absolute top-1 left-1 bg-[#272c26] rounded-full w-8 h-8 flex justify-center items-center cursor-pointer hover:bg-white hover:opacity-10 "
-              onClick={() => setImage(null)}
-            >
-              <XIcon className="h-5" />
-            </div>
-            <img
-              src={image}
-              alt=""
-              className="rounded-2xl max-h-80 object-contain"
-            />
-          </div>
-        )}
 
-        {/*  */}
-        <div className="flex justify-between border-t border-gray-700 pt-4">
-          <div className="flex space-x-0">
-            <div onClick={() => filePickerRef.current.click()}>
-              <TweetInputIcons Icon={PhotographIcon} />
-              <input
-                type="file"
-                className="hidden"
-                ref={filePickerRef}
-                onChange={addImageToTweet}
+      {!loading ? (
+        <div className="w-full">
+          <textarea
+            name=""
+            id=""
+            className="bg-transparent resize-none outline-none w-full minh-[50px] text-lg"
+            placeholder="What's on you mind?"
+            onChange={(e) => setText(e.target.value)}
+            value={text}
+          />
+          {image && (
+            <div className="relative mb-4">
+              <div
+                className="absolute top-1 left-1 bg-[#272c26] rounded-full w-8 h-8 flex justify-center items-center cursor-pointer hover:bg-white hover:opacity-10 "
+                onClick={() => setImage(null)}
+              >
+                <XIcon className="h-5" />
+              </div>
+              <img
+                src={image}
+                alt=""
+                className="rounded-2xl max-h-80 object-contain"
               />
             </div>
+          )}
 
-            <TweetInputIcons Icon={ChartBarIcon} />
-            <TweetInputIcons Icon={EmojiHappyIcon} />
-            <TweetInputIcons Icon={CalendarIcon} />
-            <TweetInputIcons Icon={LocationMarkerIcon} />
-          </div>
-          <div>
-            <button
-              disabled={!text && !image}
-              onClick={sendTweet}
-              className={` bg-[#1d9bf0] rounded-full  px-4 py-1.5 
+          {/*  */}
+          <div className="flex justify-between border-t border-gray-700 pt-4">
+            <div className="flex space-x-0">
+              <div onClick={() => filePickerRef.current.click()}>
+                <TweetInputIcons Icon={PhotographIcon} />
+                <input
+                  type="file"
+                  className="hidden"
+                  ref={filePickerRef}
+                  onChange={addImageToTweet}
+                />
+              </div>
+
+              <TweetInputIcons Icon={ChartBarIcon} />
+              <TweetInputIcons Icon={EmojiHappyIcon} />
+              <TweetInputIcons Icon={CalendarIcon} />
+              <TweetInputIcons Icon={LocationMarkerIcon} />
+            </div>
+            <div>
+              <button
+                disabled={!text && !image}
+                onClick={sendTweet}
+                className={` bg-[#1d9bf0] rounded-full  px-4 py-1.5 
                 disabled:opacity-50 disabled:cursor-not-allowed
                 `}
-            >
-              Tweet
-            </button>
+              >
+                Tweet
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="w-full flex justify-center items-center">
+          <span className="loading loading-infinity w-[10.5rem] "></span>
+        </div>
+      )}
     </div>
   );
 };

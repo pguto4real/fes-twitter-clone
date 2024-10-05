@@ -4,6 +4,7 @@ import Moment from "react-moment";
 const TweetHeader = ({ username, name, timestamp, text, photoUrl, image }) => {
   return (
     <div className="flex space-x-3 p-3 ">
+      
       <img className="w-11 h-11 rounded-full object-cover" src={photoUrl} />
       <div>
         <div className="mb-1 flex space-x-2 items-center text-gray-500">
