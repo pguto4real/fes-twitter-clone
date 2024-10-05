@@ -22,8 +22,7 @@ import { closeLogInModal, closeSignUpModal } from "@/redux/modalSlice";
 const SideBar = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
-  console.log(user)
-
+// console.log(user)
   async function handleSignOut() {
     await signOut(auth);
     dispatch(signOutUser());
@@ -45,12 +44,16 @@ const SideBar = () => {
               className="invert"
             />
           </div>
-          <SideBarLink Icon={HomeIcon} text={"Home"} />
+          <SideBarLink Icon={HomeIcon} text={"Home"} href={"/"} />
           <SideBarLink Icon={HashtagIcon} text={"Explore"} />
           <SideBarLink Icon={BellIcon} text={"Notifications"} />
           <SideBarLink Icon={InboxIcon} text={"Messages"} />
           <SideBarLink Icon={BookmarkIcon} text={"Bookmarks"} />
-          <SideBarLink Icon={UserIcon} text={"Profile"} />
+          <SideBarLink
+            Icon={UserIcon}
+            text={"Profile"}
+            href={`/profile/${user.uid}`}
+          />
           <SideBarLink Icon={DotsCircleHorizontalIcon} text={"More"} />
           <button className="text-xl font-bold mt-2 hidden xl:inline bg-[#1d9bf0] rounded-full h-[52px] w-[200px]">
             Tweet

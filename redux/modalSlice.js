@@ -4,6 +4,7 @@ const initialState = {
   signUpModalOpen: false,
   logInModalOpen: false,
   commentModalOpen: false,
+  editProfileModalOpen: false,
 
   commentTweetDetails: {
     id: null,
@@ -37,6 +38,12 @@ const modalSlice = createSlice({
     closeCommentModal: (state) => {
       state.commentModalOpen = false;
     },
+    openEditProfileModal: (state) => {
+      state.editProfileModalOpen = true;
+    },
+    closeEditProfileModal: (state) => {
+      state.editProfileModalOpen = false;
+    },
 
     setCommentTweet: (state, action) => {
       (state.commentTweetDetails.id = action.payload.id),
@@ -55,6 +62,8 @@ export const {
   closeLogInModal,
   openCommentModal,
   closeCommentModal,
+  openEditProfileModal,
+  closeEditProfileModal,
   setCommentTweet,
 } = modalSlice.actions;
 

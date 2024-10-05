@@ -1,4 +1,4 @@
-import { auth } from "@/firebase";
+import { auth, db } from "@/firebase";
 import { closeSignUpModal } from "@/redux/modalSlice";
 import { setUser } from "@/redux/userSlice";
 import Modal from "@mui/material/Modal";
@@ -8,6 +8,7 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
+import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,6 +20,7 @@ export default function SignUpModal() {
 
   const [email, SetEmail] = useState("");
   const [name, SetName] = useState("");
+  const [userName, SetUserName] = useState("");
   const [password, SetPassword] = useState("");
 
   async function handleSignUp() {
@@ -27,7 +29,23 @@ export default function SignUpModal() {
       email,
       password
     );
-
+    if (userCredentials) {
+      const userDocRef = doc(db, "users", userCredentials.user.uid);
+      await setDoc(userDocRef, {
+        uid: userCredentials.user.uid,
+        email: userCredentials.user.email,
+        name: name,
+        username: userName,
+        coverImage: "",
+        profileImage: "",
+        bio: "",
+        link: "",
+        followers: [],
+        following: [],
+        photoURL: `/assets/avatars/boy1.png/`,
+        timestamp: serverTimestamp(),
+      });
+    }
     await updateProfile(auth.currentUser, {
       displayName: name,
       photoURL: `/assets/avatars/boy1.png/`,
@@ -44,15 +62,35 @@ export default function SignUpModal() {
   useEffect(() => {
     const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) return;
-      dispatch(
-        setUser({
-          username: currentUser.email.split("@")[0],
-          name: currentUser.displayName,
-          email: currentUser.email,
-          uid: currentUser.uid,
-          photoUrl: currentUser.photoURL,
-        })
-      );
+      const fetchUserData = async () => {
+        let userData = null;
+        try {
+          const userRef = doc(db, "users", currentUser.uid); // Reference to the user document in Firestore
+          const docSnap = await getDoc(userRef);
+
+          if (docSnap.exists()) {
+            userData = docSnap.data();
+      
+            dispatch(
+              setUser({
+                uid: userData.uid,
+                email: userData.email,
+                name: userData.name,
+                link: userData.link,
+                username: userData.username,
+                coverImage: userData.coverImage,
+                bio: userData.bio,
+                followers: userData.followers,
+                following: userData.following,
+                photoUrl: userData.photoURL,
+              })
+            );
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      };
+      fetchUserData();
       //handle redux actions
     });
     return unSubscribe;
@@ -83,6 +121,13 @@ export default function SignUpModal() {
             <h1 className="text-center  font-bold text-lg mt-4">or</h1>
             <h1 className=" font-bold text-4xl mt-4">Create your account</h1>
             <div className="flex flex-col space-y-7">
+              <input
+                type="text"
+                placeholder="Username"
+                className="placeholder:text-gray-400 bg-transparent rounded-md 
+                border-gray-700 border  h-[40px] p-6 mt-8"
+                onChange={(e) => SetUserName(e.target.value)}
+              />
               <input
                 type="text"
                 placeholder="Full Name"

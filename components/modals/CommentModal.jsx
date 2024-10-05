@@ -23,7 +23,7 @@ const CommentModal = () => {
   );
 
   const { id, name, photoUrl, tweet, username } = comentTweetDetails;
-  console.log(comentTweetDetails);
+ 
   const dispatch = useDispatch();
 
   const [text, setText] = useState("");

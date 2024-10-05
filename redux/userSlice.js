@@ -1,10 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  username: null,
-  name: null,
-  email: null,
   uid: null,
+  email: null,
+  name: null,
+  link: null,
+  username: null,
+  coverImage: null,
+  bio: null,
+  followers: null,
+  following: null,
   photoUrl: null,
 };
 
@@ -13,22 +18,36 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
+      (state.uid = action.payload.uid),
+      (state.email = action.payload.email),
+      (state.name = action.payload.name),
+      (state.link = action.payload.link),
       (state.username = action.payload.username),
-        (state.name = action.payload.name),
-        (state.email = action.payload.email),
-        (state.uid = action.payload.uid),
-        (state.photoUrl = action.payload.photoUrl);
+      (state.coverImage = action.payload.coverImage),
+      (state.bio = action.payload.bio),
+      (state.followers = action.payload.followers),
+      (state.following = action.payload.following),
+        (state.photoUrl = action.payload.photoUrl)
+    },
+    updateUser: (state, action) => {
+      // Assuming action.payload contains the fields to update
+      Object.assign(state, action.payload);
     },
     signOutUser: (state) => {
-      (state.username = null),
-        (state.name = null),
-        (state.email = null),
-        (state.uid = null),
-        (state.photoUrl = null);
+      uid= null,
+      email= null,
+      name= null,
+      link= null,
+      username= null,
+      coverImage= null,
+      bio= null,
+      followers= null,
+      following= null,
+      photoUrl= null
     },
   },
 });
 
-export const { setUser, signOutUser } = userSlice.actions;
+export const { setUser, signOutUser,updateUser } = userSlice.actions;
 
 export default userSlice.reducer;

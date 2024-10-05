@@ -35,8 +35,7 @@ export const getServerSideProps = async (context) => {
   };
 };
 const CommentsPage = ({ tweetData }) => {
-  console.log(tweetData);
-  // console.log(object)
+ 
   const user = useSelector((state) => state.user);
   return (
     <div>
