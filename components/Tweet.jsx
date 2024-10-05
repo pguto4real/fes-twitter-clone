@@ -4,6 +4,7 @@ import {
   ChartBarIcon,
   ChatIcon,
   HeartIcon,
+  TrashIcon,
   UploadIcon,
 } from "@heroicons/react/outline";
 import { HeartIcon as FilledHeart } from "@heroicons/react/solid";
@@ -18,6 +19,7 @@ import { db } from "@/firebase";
 import {
   arrayRemove,
   arrayUnion,
+  deleteDoc,
   doc,
   getDoc,
   onSnapshot,
@@ -27,39 +29,7 @@ import {
 const Tweet = ({ data }) => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
-  // const likeComment = async () => {
-  //   const tweetId = data.tweetId;
-  //   const userId = user.uid;
-  //   // const tweetRef = doc(db, "posts", tweetId);
-
-  //   try {
-  //     const docRef = doc(db, "posts", tweetId);
-  //     const docSnap = await getDoc(docRef);
-
-  //     if (docSnap.exists()) {
-  //       const data = docSnap.data();
-  //       const likes = data.likes || [];
-
-  //       if (likes.includes(userId)) {
-  //         console.log("User has already liked the post.");
-  //         await updateDoc(docRef, {
-  //           likes: arrayRemove(userId),
-  //         });
-  //         console.log("Post unliked.");
-  //       } else {
-  //         console.log("User has not liked the post yet.");
-  //         await updateDoc(docRef, {
-  //           likes: arrayUnion(userId),
-  //         });
-  //         console.log("Post liked.");
-  //       }
-  //     } else {
-  //       console.log("No such document!");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error checking likes:", error);
-  //   }
-  // };
+ 
 
   const [isLiked, setIsLiked] = useState(false); // Tracks if the user has liked the post
   const [likesCount, setLikesCount] = useState(0); // Tracks the number of likes on the post
@@ -67,11 +37,12 @@ const Tweet = ({ data }) => {
 
   // Real-time listener for the post document using onSnapshot
   useEffect(() => {
-    const tweetId = data.tweetId;
+    const tweetId = data?.tweetId;
+    console.log(tweetId)
     const userId = user.uid;
-    const postRef = doc(db, "posts", tweetId);
-
-    const unsubscribe = onSnapshot(postRef, (docSnapshot) => {
+  
+    if (!tweetId) return;
+    const unsubscribe = onSnapshot(doc(db, "posts", tweetId), (docSnapshot) => {
       if (docSnapshot.exists()) {
         const data = docSnapshot.data();
 
@@ -84,7 +55,7 @@ const Tweet = ({ data }) => {
     });
 
     // Cleanup listener when component unmounts
-    return () => unsubscribe();
+    return  unsubscribe;
   }, [data.tweetId, user.uid]);
 
   // Function to toggle like/unlike
@@ -111,6 +82,20 @@ const Tweet = ({ data }) => {
       console.error("Error toggling like:", error);
     }
   };
+
+  const isAuthorized = user.uid === data?.uid;
+
+  const deleteTweet = async () => {
+    const tweetId = data.tweetId;
+
+    try {
+      const postRef = doc(db, "posts", tweetId);
+      await deleteDoc(postRef);
+      console.log("Post deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
   return (
     <div className="border-b border-gray-700">
       <Link href={`${data?.tweetId}`}>
@@ -128,19 +113,18 @@ const Tweet = ({ data }) => {
           onClick={() => {
             if (!user.username) {
               dispatch(openLogInModal());
-              return
-            } 
-              dispatch(
-                setCommentTweet({
-                  id: data?.tweetId,
-                  tweet: data?.tweet,
-                  photoUrl: data?.photoUrl,
-                  name: data?.name,
-                  username: data?.username,
-                })
-              );
-              dispatch(openCommentModal());
-            
+              return;
+            }
+            dispatch(
+              setCommentTweet({
+                id: data?.tweetId,
+                tweet: data?.tweet,
+                photoUrl: data?.photoUrl,
+                name: data?.name,
+                username: data?.username,
+              })
+            );
+            dispatch(openCommentModal());
           }}
           className="flex justify-center items-center space-x-2"
         >
@@ -158,6 +142,11 @@ const Tweet = ({ data }) => {
           )}
           {likesCount > 0 && <span>{likesCount}</span>}
         </div>
+        {isAuthorized && (
+          <div onClick={deleteTweet}>
+            <TrashIcon className="w-5 cursor-pointer hover:text-red-600" />
+          </div>
+        )}
         <div>
           <ChartBarIcon className="w-5 flex justify-center items-center cursor-not-allowed" />
         </div>
