@@ -8,7 +8,7 @@ import {
 import React, { useState } from "react";
 import TweetInputIcons from "./TweetInputIcons";
 import { useSelector } from "react-redux";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 
 const TweetInput = () => {
@@ -27,6 +27,8 @@ const TweetInput = () => {
       tweet: text,
       likes: [],
     });
+    const postId = docRef.id;
+    await updateDoc(docRef, { tweetId:postId });
     setText("")
   }
 

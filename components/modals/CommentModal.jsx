@@ -1,6 +1,6 @@
 import { closeCommentModal } from "@/redux/modalSlice";
 import Modal from "@mui/material/Modal";
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import TweetInputIcons from "../TweetInputIcons";
 import {
@@ -11,9 +11,42 @@ import {
   PhotographIcon,
   XIcon,
 } from "@heroicons/react/outline";
+import { arrayUnion, doc, updateDoc } from "firebase/firestore";
+import { db } from "@/firebase";
+import { useRouter } from "next/router";
 const CommentModal = () => {
   const isOpen = useSelector((state) => state.modals.commentModalOpen);
+  const user = useSelector((state) => state.user);
+
+  const comentTweetDetails = useSelector(
+    (state) => state.modals.commentTweetDetails
+  );
+
+  const { id, name, photoUrl, tweet, username } = comentTweetDetails;
+  console.log(comentTweetDetails);
   const dispatch = useDispatch();
+
+  const [text, setText] = useState("");
+
+  const router = useRouter();
+
+  async function sendComment() {
+    const docRef = doc(db, "posts", id);
+    const commentDetails = {
+      username: user.username,
+      name: user.name,
+      userId: user.uid,
+      photoUrl: user.photoUrl,
+      comment: text,
+    };
+    await updateDoc(docRef, {
+      comment: arrayUnion(commentDetails),
+    });
+    dispatch(closeCommentModal());
+    router.push("/" + id);
+    setText("");
+  }
+
   return (
     <Modal
       open={isOpen}
@@ -27,13 +60,18 @@ const CommentModal = () => {
      bg-black text-white border-gray-700 border sm:rounded-lg
   sm:p-10 p-4 relative"
       >
-        <div className="absolute w-[2px] h-[77px] bg-gray-500 
+        <div
+          className="absolute w-[2px] h-[77px] bg-gray-500 
         left-[40px] top-[92px]
         sm:left-[64px] sm:top-[116px]
-        "></div>
+        "
+        ></div>
         <div
           className="absolute  top-4 cursor-pointer"
-          onClick={() => dispatch(closeCommentModal())}
+          onClick={() => {
+            setText("");
+            dispatch(closeCommentModal());
+          }}
         >
           <XIcon className="w-6" />
         </div>
@@ -41,18 +79,18 @@ const CommentModal = () => {
           <div className="flex space-x-3">
             <img
               className="w-11 h-11 rounded-full object-cover"
-              src="/assets/avatar-placeholder.png/"
+              src={`${photoUrl || "/assets/avatar-placeholder.png/"}`}
               alt=""
             />
             <div>
               <div className="flex space-x-1">
-                <h1 className="font-bold">pguto</h1>
-                <h1 className="text-gray-500">@_pguto</h1>
+                <h1 className="font-bold">{name}</h1>
+                <h1 className="text-gray-500">@{username}</h1>
               </div>
-              <p className="mt-2">welcome to the fes</p>
+              <p className="mt-2">{tweet}</p>
 
               <h1 className="text-gray-500 text-[15px] mt-2">
-                Replying to <span className="text-[#1b9bf0] ">@_pguto</span>
+                Replying to <span className="text-[#1b9bf0] ">@{username}</span>
               </h1>
             </div>
           </div>
@@ -61,13 +99,13 @@ const CommentModal = () => {
           <div className="flex space-x-3">
             <img
               className="w-11 h-11 rounded-full object-cover"
-              src="/assets/avatar-placeholder.png/"
+              src={`${user.photoUrl || "/assets/avatar-placeholder.png/"}`}
               alt=""
             />
             <div className="w-full">
               <textarea
-                name=""
-                id=""
+                onChange={(e) => setText(e.target.value)}
+                value={text}
                 className="w-full bg-transparent resize-none text-lg outline-none"
                 placeholder="Tweet your reply"
               />
@@ -82,8 +120,8 @@ const CommentModal = () => {
                 </div>
                 <div>
                   <button
-                    //   disabled={}
-                    //   onClick={sendTweet}
+                    disabled={!text}
+                    onClick={sendComment}
                     className={` bg-[#1d9bf0] rounded-full  px-4 py-1.5 
                 disabled:opacity-50 disabled:cursor-not-allowed
                 `}

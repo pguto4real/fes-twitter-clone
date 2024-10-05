@@ -30,7 +30,7 @@ export default function SignUpModal() {
 
     await updateProfile(auth.currentUser, {
       displayName: name,
-      photoURL: `/assets/avatar-placeholder.png/`,
+      photoURL: `/assets/avatars/boy1.png/`,
     });
     router.reload();
   }
