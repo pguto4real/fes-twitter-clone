@@ -22,6 +22,7 @@ import { closeLogInModal, closeSignUpModal } from "@/redux/modalSlice";
 const SideBar = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
+  console.log(user)
 
   async function handleSignOut() {
     await signOut(auth);
@@ -56,26 +57,28 @@ const SideBar = () => {
           </button>
         </nav>
       </div>
-      <div className="mb-2 " onClick={handleSignOut}>
-        <div className="p-3 flex justify-between items-center rounded-full hover:bg-white hover:bg-opacity-10 cursor-pointer">
-          <div className="flex space-x-3 items-center ">
-            <img
-              className="w-10 h-10 rounded-full object-cover"
-              src={`${user.photoUrl || "/assets/avatar-placeholder.png/"}`}
-            />
-            <div className="xl:flex flex-col hidden ">
-              <h1 className="font-bold overflow-hidden text-ellipsis max-w-24">
-                {user?.name?.split(" ")[0]}
-              </h1>
+      {user.username && (
+        <div className="mb-2 " onClick={handleSignOut}>
+          <div className="p-3 flex justify-between items-center rounded-full hover:bg-white hover:bg-opacity-10 cursor-pointer">
+            <div className="flex space-x-3 items-center ">
+              <img
+                className="w-10 h-10 rounded-full object-cover"
+                src={`${user.photoUrl || "/assets/avatar-placeholder.png/"}`}
+              />
+              <div className="xl:flex flex-col hidden ">
+                <h1 className="font-bold overflow-hidden text-ellipsis max-w-24">
+                  {user?.name?.split(" ")[0]}
+                </h1>
 
-              <h1 className="text-gray-500 text-xs">@{user.username}</h1>
+                <h1 className="text-gray-500 text-xs">@{user.username}</h1>
+              </div>
+            </div>
+            <div className="hidden xl:flex">
+              <DotsHorizontalIcon className="h-5" />
             </div>
           </div>
-          <div className="hidden xl:flex">
-            <DotsHorizontalIcon className="h-5" />
-          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

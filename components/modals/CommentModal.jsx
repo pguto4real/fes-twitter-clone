@@ -43,7 +43,7 @@ const CommentModal = () => {
       comment: arrayUnion(commentDetails),
     });
     dispatch(closeCommentModal());
-    router.push("/" + id);
+    // router.push("/" + id);
     setText("");
   }
 

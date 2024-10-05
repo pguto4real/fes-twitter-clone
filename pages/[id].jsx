@@ -1,3 +1,4 @@
+import BottomBanner from "@/components/BottomBanner";
 import PostFeed from "@/components/PostFeed";
 import SideBar from "@/components/SideBar";
 import Trending from "@/components/Trending";
@@ -33,8 +34,8 @@ export const getServerSideProps = async (context) => {
   };
 };
 const CommentsPage = ({ tweetData }) => {
-    console.log(tweetData.comments)
-    // console.log(object)
+  console.log(tweetData.comments);
+  // console.log(object)
   const user = useSelector((state) => state.user);
   return (
     <div>
@@ -60,7 +61,7 @@ const CommentsPage = ({ tweetData }) => {
           <div className="flex space-x-3 p-3  border-b border-gray-700">
             <img
               className="w-11 h-11 rounded-full object-cover"
-              src={tweetData?.photoUrl}
+              src={tweetData?.photoUrl || "/assets/avatar-placeholder.png/"}
             />
             <div>
               <div className="mb-1 flex space-x-2 items-center text-gray-500">
@@ -102,10 +103,10 @@ const CommentsPage = ({ tweetData }) => {
                   <div className="mb-1 flex space-x-2 items-center text-gray-500">
                     <h1 className="text-white font-bold">{comment?.name}</h1>
                     <span>@{comment?.username}</span>
-                  
+
                     {/* <Moment fromNow>{JSON.parse(comment?.timestamp)}</Moment> */}
                   </div>
-                  <span >{comment?.comment}</span>
+                  <span>{comment?.comment}</span>
                 </div>
               </div>
             );
@@ -113,6 +114,9 @@ const CommentsPage = ({ tweetData }) => {
         </div>
         <Trending />
       </div>
+      {
+        !user.username &&  <BottomBanner />
+      }
     </div>
   );
 };
