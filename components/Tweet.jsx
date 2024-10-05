@@ -34,11 +34,11 @@ const Tweet = ({ data }) => {
   const [isLiked, setIsLiked] = useState(false); // Tracks if the user has liked the post
   const [likesCount, setLikesCount] = useState(0); // Tracks the number of likes on the post
   const [commentsCount, setCommentsCount] = useState(0); // Tracks the number of likes on the post
-
+console.log(data)
   // Real-time listener for the post document using onSnapshot
   useEffect(() => {
     const tweetId = data?.tweetId;
-    console.log(tweetId)
+   
     const userId = user.uid;
   
     if (!tweetId) return;
@@ -106,6 +106,7 @@ const Tweet = ({ data }) => {
           text={data?.tweet}
           photoUrl={data?.photoUrl}
           tweetId={data?.tweetId}
+          image={data?.image}
         />
       </Link>
       <div className="p-3 ml-16 text-gray-500 flex space-x-14">

@@ -22,6 +22,7 @@ export const getServerSideProps = async (context) => {
     email: data.email,
     uid: data.uid,
     photoUrl: data.photoUrl,
+    image: data.image || null,
     tweet: data.tweet,
     comments: data.comment || null,
     timestamp: JSON.stringify(data.timestamp.toDate()),
@@ -34,7 +35,7 @@ export const getServerSideProps = async (context) => {
   };
 };
 const CommentsPage = ({ tweetData }) => {
-  console.log(tweetData.comments);
+  console.log(tweetData);
   // console.log(object)
   const user = useSelector((state) => state.user);
   return (
@@ -71,6 +72,12 @@ const CommentsPage = ({ tweetData }) => {
                 <Moment fromNow>{JSON.parse(tweetData?.timestamp)}</Moment>
               </div>
               <span className="text-2xl">{tweetData?.tweet}</span>
+              {tweetData?.image && (
+                <img
+                  src={tweetData?.image}
+                  className="object-cover rounded-md mt-3 max-h-80 border border-gray-700"
+                />
+              )}
             </div>
           </div>
           <div className="flex justify-between p-3   border-b border-gray-700">
@@ -114,9 +121,7 @@ const CommentsPage = ({ tweetData }) => {
         </div>
         <Trending />
       </div>
-      {
-        !user.username &&  <BottomBanner />
-      }
+      {!user.username && <BottomBanner />}
     </div>
   );
 };

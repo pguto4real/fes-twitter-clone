@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -13,7 +14,7 @@ const firebaseConfig = {
   projectId: "fes-twitterclone",
   storageBucket: "fes-twitterclone.appspot.com",
   messagingSenderId: "732252480285",
-  appId: "1:732252480285:web:3d449740e63bcfcafcf7f4"
+  appId: "1:732252480285:web:3d449740e63bcfcafcf7f4",
 };
 
 // Initialize Firebase
@@ -21,3 +22,4 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage();
