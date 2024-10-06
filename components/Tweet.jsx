@@ -25,6 +25,7 @@ import {
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
+import { useUpdatePostLikeMutation } from "@/redux/postsApi";
 
 const Tweet = ({ data, refreshPosts, isRefreshed }) => {
   const dispatch = useDispatch();
@@ -57,33 +58,40 @@ const Tweet = ({ data, refreshPosts, isRefreshed }) => {
     return unsubscribe;
   }, [data.tweetId, user.uid]);
 
-  // Function to toggle like/unlike
-  const likeComment = async () => {
-    if (!user.username) {
-      dispatch(openLogInModal());
-      return;
-    }
-    const postRef = doc(db, "posts", data.tweetId);
+  const [updatePostLike] = useUpdatePostLikeMutation();
 
-    try {
-      if (isLiked) {
-        // If the user has liked the post, unlike it
-        await updateDoc(postRef, {
-          likes: arrayRemove(user.uid),
-        });
-      } else {
-        // If the user hasn't liked the post, like it
-        await updateDoc(postRef, {
-          likes: arrayUnion(user.uid),
-        });
-      }
-      if (isRefreshed) {
-        refreshPosts();
-      }
-    } catch (error) {
-      console.error("Error toggling like:", error);
-    }
+  const handleLike = async () => {
+    const userId = user.uid
+    const postId = data?.tweetId;
+    await updatePostLike({ postId, userId, isLiked });
   };
+  // Function to toggle like/unlike
+  // const likeComment = async () => {
+  //   if (!user.username) {
+  //     dispatch(openLogInModal());
+  //     return;
+  //   }
+  //   const postRef = doc(db, "posts", data.tweetId);
+
+  //   try {
+  //     if (isLiked) {
+  //       // If the user has liked the post, unlike it
+  //       await updateDoc(postRef, {
+  //         likes: arrayRemove(user.uid),
+  //       });
+  //     } else {
+  //       // If the user hasn't liked the post, like it
+  //       await updateDoc(postRef, {
+  //         likes: arrayUnion(user.uid),
+  //       });
+  //     }
+  //     if (isRefreshed) {
+  //       refreshPosts();
+  //     }
+  //   } catch (error) {
+  //     console.error("Error toggling like:", error);
+  //   }
+  // };
 
   const isAuthorized = user.uid === data?.uid;
 
@@ -98,9 +106,10 @@ const Tweet = ({ data, refreshPosts, isRefreshed }) => {
       console.error("Error deleting post:", error);
     }
   };
+ 
   return (
     <div className="border-b border-gray-700">
-      <Link href={`${data?.tweetId}`}>
+      {/* <Link href={`${data?.tweetId}`}> */}
         <TweetHeader
           username={data?.username}
           name={data?.name}
@@ -109,8 +118,9 @@ const Tweet = ({ data, refreshPosts, isRefreshed }) => {
           photoUrl={data?.photoUrl}
           tweetId={data?.tweetId}
           image={data?.image}
+          uid={data?.uid}
         />
-      </Link>
+      {/* </Link> */}
       <div className="p-3 ml-16 text-gray-500 flex space-x-14">
         <div
           onClick={() => {
@@ -136,7 +146,7 @@ const Tweet = ({ data, refreshPosts, isRefreshed }) => {
         </div>
         <div
           className="flex justify-center items-center space-x-2"
-          onClick={likeComment}
+          onClick={handleLike}
         >
           {isLiked ? (
             <FilledHeart className="w-5 cursor-pointer text-pink-500" />

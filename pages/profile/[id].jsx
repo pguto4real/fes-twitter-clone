@@ -1,4 +1,5 @@
 import BottomBanner from "@/components/BottomBanner";
+import FollowButton from "@/components/FollowButton";
 import CommentModal from "@/components/modals/CommentModal";
 import EditProfileModal from "@/components/modals/EditProfileModal";
 import PostFeed from "@/components/PostFeed";
@@ -7,7 +8,9 @@ import ProfileHeaderSkeleton from "@/components/ProfileHeaderSkeleton";
 import SideBar from "@/components/SideBar";
 import Trending from "@/components/Trending";
 import { db, storage } from "@/firebase";
+import { useGetAllPostsQuery, useGetPostsByUidQuery } from "@/redux/postsApi";
 import { setUserProfile } from "@/redux/userProfileSlice";
+import { useGetUserByIdQuery } from "@/redux/usersApi";
 
 import {
   ArrowLeftIcon,
@@ -22,149 +25,37 @@ import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import Moment from "react-moment";
 import { useSelector } from "react-redux";
-// export const getServerSideProps = async (context) => {
-//   const id = context.query.id; // Extract user id from the URL
 
-//   let userData = null;
-//   let formattedData = null;
-
-//   try {
-//     const userRef = doc(db, "users", id); // Reference to the user document in Firestore
-//     const docSnap = await getDoc(userRef);
-
-//     if (docSnap.exists()) {
-//       userData = docSnap.data();
-//       console.log(userData)
-//       formattedData = {
-//         uid: userData.uid,
-//         email: userData.email,
-//         name: userData.name,
-//         link: userData.link,
-//         username: userData.username,
-//         coverImage: userData.coverImage,
-//         bio: userData.bio,
-//         followers: userData.followers,
-//         following: userData.following,
-//         photoUrl: userData.photoURL,
-//         timestamp: JSON.stringify(userData.timestamp.toDate()),
-//       };
-//     }
-//   } catch (error) {
-//     console.error("Error fetching user data:", error);
-//   }
-
-//   // If user not found, return 404
-//   if (!userData) {
-//     return {
-//       notFound: true,
-//     };
-//   }
-
-//   // Return user data as props
-//   return {
-//     props: {
-//       tweetData: formattedData,
-//     },
-//   };
-// };
 const profile = () => {
-  const user = useSelector((state) => state.user);
-
+  const currentUser = useSelector((state) => state.user);
+  const router = useRouter();
+  const id = router.query.id;
   const [coverImg, setCoverImg] = useState(null);
   const [profileImg, setProfileImg] = useState(null);
-  const [tweetData, setTweetData] = useState([]);
-  const [feedType, setFeedType] = useState("posts");
-
-  const [isPendingFollow, setIsPendingFollow] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const [isUploading, setIsUploading] = useState(false);
-
-  // 	// const [profileImg, setProfileImg] = useState(null);
-  // console.log(user)
 
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
 
-  //   console.log(formattedData);
-  //   console.log(user);
+  const { data: posts, error, isLoading } = useGetPostsByUidQuery(id);
+  const {
+    data: users,
+    error: userError,
+    isLoading:isUsersLoading,
+  } = useGetUserByIdQuery(id);
 
-  const isMyProfile = user.uid === tweetData?.uid;
-
-  const router = useRouter();
-  const id = router.query.id;
+  const [_, setForceUpdate] = useState(false); // State to force rerender
 
   useEffect(() => {
-    setIsLoading(true);
-    // Get user ID from the tweetData
-    if (!id) return;
-    // Subscribe to Firestore document updates
-    const unsubscribe = onSnapshot(doc(db, "users", id), (doc) => {
-      if (doc.exists()) {
-        setTweetData({ ...tweetData, ...doc.data() }); // Merge new data with existing data
-      }
-      setIsLoading(false);
-    });
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, [id]);
-
-  const handleImgChange = (e, state) => {
-    const reader = new FileReader();
-    if (e.target.files[0]) {
-      reader.readAsDataURL(e.target.files[0]);
+    // Force a rerender when the user data changes
+    if (users) {
+      setForceUpdate((prev) => !prev); // Toggle the force update state
     }
-    reader.addEventListener("load", (e) => {
-      if (state === "coverImg") {
-        setCoverImg(e.target.result);
-      } else {
-        setProfileImg(e.target.result);
-      }
-    });
-  };
-  const handleUpload = async (type) => {
-   
-
-    const storageRef = ref(storage, `${type}/${user.uid}`);
-    setIsUploading(true);
-
-    try {
-      // Update Firestore with the new image URL
-      if (type === "cover") {
-        // Start the upload
-        await uploadString(storageRef, coverImg, "data_url");
-
-        // Get the download URL
-        const url = await getDownloadURL(storageRef);
-        await updateDoc(doc(db, "users", user.uid), {
-          coverImage: url, // Use template literals to set the correct field
-        });
-      } else {
-        // Start the upload
-        await uploadString(storageRef, profileImg, "data_url");
-
-        // Get the download URL
-        const url = await getDownloadURL(storageRef);
-        await updateDoc(doc(db, "users", user.uid), {
-          photoURL: url, // Use template literals to set the correct field
-        });
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-  const uploadImage = async () => {
-  
-    if (coverImg) {
-      
-      handleUpload("cover");
-    } else if (profileImg) {
-      handleUpload("profile");
-    }
-  };
+  }, [users]);
+  console.log(users)
+  const [feedType, setFeedType] = useState("posts");
+console.log(isUsersLoading)
+console.log(isLoading)
+  const isMyProfile = currentUser.uid === users?.uid;
   return (
     <div>
       <div
@@ -176,7 +67,7 @@ const profile = () => {
 
         <div className="sm:ml-20 xl:ml-[350px] flex-grow border-x-gray-700 border-x max-w-2xl">
           {isLoading && <ProfileHeaderSkeleton />}
-          {!isLoading && tweetData && (
+          {!isUsersLoading && users && (
             <>
               <div
                 className="px-3 
@@ -188,11 +79,13 @@ const profile = () => {
                 <Link href={"/"}>
                   <ArrowLeftIcon className="w-7 cursor-pointer " />
                 </Link>
-                <h1>{tweetData.name}</h1>
+                <h1>{users.name}</h1>
               </div>
               <div className="relative group/cover">
                 <img
-                  src={coverImg || user?.coverImage || "/assets/cover.png"}
+                  src={
+                    coverImg || currentUser?.coverImage || "/assets/cover.png"
+                  }
                   className="h-52 w-full object-cover"
                   alt="cover image"
                 />
@@ -223,7 +116,7 @@ const profile = () => {
                     <img
                       src={
                         profileImg ||
-                        tweetData?.photoURL ||
+                        users?.photoURL ||
                         "/avatar-placeholder.png"
                       }
                     />
@@ -241,14 +134,11 @@ const profile = () => {
               <div className="flex justify-end px-4 mt-5">
                 {isMyProfile && <EditProfileModal />}
                 {!isMyProfile && (
-                  <button
-                    className="btn btn-outline rounded-full btn-sm"
-                    onClick={() => follow(user?._id)}
-                  >
-                    {isPendingFollow && <LoadingSpinner size="sm" />}
-                    {/* {!isPending && amIFollowing && "UnFollow"}
-                {!isPending && !amIFollowing && "Follow"} */}
-                  </button>
+                  <FollowButton
+                    currentUserId={currentUser.uid}
+                    targetUserId={users.uid}
+                    className={"btn btn-outline rounded-full btn-sm"}
+                  />
                 )}
                 {(coverImg || profileImg) && (
                   <button
@@ -266,15 +156,15 @@ const profile = () => {
 
               <div className="flex flex-col gap-4 mt-14 px-4">
                 <div className="flex flex-col">
-                  <span className="font-bold text-lg">{tweetData?.name}</span>
+                  <span className="font-bold text-lg">{users?.name}</span>
                   <span className="text-sm text-slate-500">
-                    @{tweetData?.username}
+                    @{users?.username}
                   </span>
-                  <span className="text-sm my-1">{tweetData?.bio}</span>
+                  <span className="text-sm my-1">{users?.bio}</span>
                 </div>
 
                 <div className="flex gap-2 flex-wrap">
-                  {tweetData?.link && (
+                  {users?.link && (
                     <div className="flex gap-1 items-center ">
                       <>
                         <LinkIcon className="w-3 h-3 text-slate-500" />
@@ -284,7 +174,7 @@ const profile = () => {
                           rel="noreferrer"
                           className="text-sm text-blue-500 hover:underline"
                         >
-                          {tweetData?.link}
+                          {users?.link}
                         </a>
                       </>
                     </div>
@@ -292,20 +182,20 @@ const profile = () => {
                   <div className="flex gap-2 items-center">
                     {/* <IoCalendarOutline className="w-4 h-4 text-slate-500" /> */}
                     <span className="text-sm text-slate-500">
-                      {/* {formatMemberSinceDate(user?.createdAt)} */}
+                      {/* {formatMemberSinceDate(currentUser?.createdAt)} */}
                     </span>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <div className="flex gap-1 items-center">
                     <span className="font-bold text-xs">
-                      {tweetData?.following?.length}
+                      {users?.following?.length}
                     </span>
                     <span className="text-slate-500 text-xs">Following</span>
                   </div>
                   <div className="flex gap-1 items-center">
                     <span className="font-bold text-xs">
-                      {tweetData?.followers?.length}
+                      {users?.followers?.length}
                     </span>
                     <span className="text-slate-500 text-xs">Followers</span>
                   </div>
@@ -333,15 +223,11 @@ const profile = () => {
               </div>
             </>
           )}
-          <Posts
-            feedType={feedType}
-            username={tweetData.username}
-            userId={id}
-          />
+          <Posts feedType={feedType} username={users?.username} userId={id} />
         </div>
         <Trending />
       </div>
-      {!user.username && <BottomBanner />}
+      {!currentUser.username && <BottomBanner />}
       <CommentModal />
     </div>
   );

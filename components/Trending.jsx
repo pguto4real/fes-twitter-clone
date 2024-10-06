@@ -1,11 +1,23 @@
+import { db } from "@/firebase";
 import { DotsHorizontalIcon, SearchIcon } from "@heroicons/react/outline";
 import { BadgeCheckIcon } from "@heroicons/react/solid";
-import React from "react";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import WhoToFollow from "./WhoToFollow";
+import useNonMutualUsers from "@/hooks/useNonMutualUsers";
 
 const Trending = () => {
+  const currentUser = useSelector((state) => state.user);
+  const [unfollowedUsers, setUnfollowedUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [followStatus, setFollowStatus] = useState(false);
+  const { nonMutualUsers, isLoadings } = useNonMutualUsers(currentUser.uid,followStatus);
+
+  
+  console.log(nonMutualUsers);
   return (
     <div className="hidden lg:flex flex-col ml-7 mt-4 ">
-      
       <div
         className="flex space-x-3
        bg-white bg-opacity-10 
@@ -73,63 +85,10 @@ const Trending = () => {
       </div>
       <div className="bg-white bg-opacity-10 w-[300px] h-[300px] rounded-3xl mt-3">
         <h1 className="font-bold text-xl p-3">Who to follow</h1>
-        <div className="p-3 flex justify-between">
-          <div className="flex space-x-3">
-            <img
-              className="w-11 h-11 rounded-full object-cover"
-              src="/assets/avatar-placeholder.png/"
-            />
-            <div className="flex flex-col">
-              <div className="flex space-x-1">
-                <h1 className="font-bold">Elon Musk</h1>
-                <BadgeCheckIcon className="text-blue-400  w-[18px]" />
-              </div>
+        {nonMutualUsers.map((user) => (
+          <WhoToFollow user={user} currentUser={currentUser}/>
+        ))}
 
-              <h1 className="text-gray-500 text-[12px] mt-1">@elonMusk</h1>
-            </div>
-          </div>
-          <button className="bg-white text-black text-sm w-20 h-8 rounded-3xl">
-            Follow
-          </button>
-        </div>
-        <div className="p-3 flex justify-between">
-          <div className="flex space-x-3">
-            <img
-              className="w-11 h-11 rounded-full object-cover"
-              src="/assets/avatar-placeholder.png/"
-            />
-            <div className="flex flex-col">
-              <div className="flex space-x-1">
-                <h1 className="font-bold">Elon Musk</h1>
-                <BadgeCheckIcon className="text-blue-400  w-[18px]" />
-              </div>
-
-              <h1 className="text-gray-500 text-[12px] mt-1">@elonMusk</h1>
-            </div>
-          </div>
-          <button className="bg-white text-black text-sm w-20 h-8 rounded-3xl">
-            Follow
-          </button>
-        </div>
-        <div className="p-3 flex justify-between">
-          <div className="flex space-x-3">
-            <img
-              className="w-11 h-11 rounded-full object-cover"
-              src="/assets/avatar-placeholder.png/"
-            />
-            <div className="flex flex-col">
-              <div className="flex space-x-1">
-                <h1 className="font-bold">Elon Musk</h1>
-                <BadgeCheckIcon className="text-blue-400  w-[18px]" />
-              </div>
-
-              <h1 className="text-gray-500 text-[12px] mt-1">@elonMusk</h1>
-            </div>
-          </div>
-          <button className="bg-white text-black text-sm w-20 h-8 rounded-3xl">
-            Follow
-          </button>
-        </div>
       </div>
     </div>
   );
