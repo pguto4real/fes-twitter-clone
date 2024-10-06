@@ -15,7 +15,7 @@ export const getServerSideProps = async (context) => {
   const docRef = doc(db, "posts", id);
   const tweetDoc = await getDoc(docRef);
   const data = tweetDoc.data();
-
+  // console.log(data)
   const formattedData = {
     username: data.username,
     name: data.name,

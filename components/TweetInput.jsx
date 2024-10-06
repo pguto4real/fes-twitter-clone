@@ -62,11 +62,12 @@ const TweetInput = () => {
       setImage(e.target.result);
     });
   }
+
   return (
     <div className="flex space-x-3 p-3 border-b border-gray-700">
       <img
         className="w-11 h-11 rounded-full object-cover"
-        src="/assets/avatar-placeholder.png/"
+        src={`${user.photoUrl ||  '/assets/avatar-placeholder.png/'}`}
         alt=""
       />
 

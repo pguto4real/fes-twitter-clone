@@ -34,16 +34,16 @@ const userSlice = createSlice({
       Object.assign(state, action.payload);
     },
     signOutUser: (state) => {
-      uid= null,
-      email= null,
-      name= null,
-      link= null,
-      username= null,
-      coverImage= null,
-      bio= null,
-      followers= null,
-      following= null,
-      photoUrl= null
+      state.uid= null,
+      state.email= null,
+      state.name= null,
+      state.link= null,
+      state.username= null,
+      state.coverImage= null,
+      state.bio= null,
+      state.followers= null,
+      state.following= null,
+      state.photoUrl= null
     },
   },
 });

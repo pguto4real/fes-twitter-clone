@@ -38,6 +38,7 @@ const SideBar = () => {
         <nav className="xl:space-y-1.5">
           <div className="xl:justify-start flex justify-center items-center py-3 xl:p-3">
             <Image
+            alt="logo"
               src={"/assets/twitter-logo.svg"}
               width={34}
               height={34}

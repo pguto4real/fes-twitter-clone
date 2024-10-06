@@ -6,7 +6,7 @@ import Posts from "@/components/Posts";
 import ProfileHeaderSkeleton from "@/components/ProfileHeaderSkeleton";
 import SideBar from "@/components/SideBar";
 import Trending from "@/components/Trending";
-import { db } from "@/firebase";
+import { db, storage } from "@/firebase";
 import { setUserProfile } from "@/redux/userProfileSlice";
 
 import {
@@ -15,7 +15,8 @@ import {
   LinkIcon,
 } from "@heroicons/react/outline";
 import { PencilIcon } from "@heroicons/react/solid";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
+import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
@@ -77,6 +78,8 @@ const profile = () => {
   const [isPendingFollow, setIsPendingFollow] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [isUploading, setIsUploading] = useState(false);
+
   // 	// const [profileImg, setProfileImg] = useState(null);
   // console.log(user)
 
@@ -106,7 +109,62 @@ const profile = () => {
     // Cleanup subscription on unmount
     return () => unsubscribe();
   }, [id]);
- 
+
+  const handleImgChange = (e, state) => {
+    const reader = new FileReader();
+    if (e.target.files[0]) {
+      reader.readAsDataURL(e.target.files[0]);
+    }
+    reader.addEventListener("load", (e) => {
+      if (state === "coverImg") {
+        setCoverImg(e.target.result);
+      } else {
+        setProfileImg(e.target.result);
+      }
+    });
+  };
+  const handleUpload = async (type) => {
+   
+
+    const storageRef = ref(storage, `${type}/${user.uid}`);
+    setIsUploading(true);
+
+    try {
+      // Update Firestore with the new image URL
+      if (type === "cover") {
+        // Start the upload
+        await uploadString(storageRef, coverImg, "data_url");
+
+        // Get the download URL
+        const url = await getDownloadURL(storageRef);
+        await updateDoc(doc(db, "users", user.uid), {
+          coverImage: url, // Use template literals to set the correct field
+        });
+      } else {
+        // Start the upload
+        await uploadString(storageRef, profileImg, "data_url");
+
+        // Get the download URL
+        const url = await getDownloadURL(storageRef);
+        await updateDoc(doc(db, "users", user.uid), {
+          photoURL: url, // Use template literals to set the correct field
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  const uploadImage = async () => {
+  
+    if (coverImg) {
+      
+      handleUpload("cover");
+    } else if (profileImg) {
+      handleUpload("profile");
+    }
+  };
   return (
     <div>
       <div
@@ -134,7 +192,7 @@ const profile = () => {
               </div>
               <div className="relative group/cover">
                 <img
-                  src={coverImg || user?.coverImg || "/assets/cover.png"}
+                  src={coverImg || user?.coverImage || "/assets/cover.png"}
                   className="h-52 w-full object-cover"
                   alt="cover image"
                 />
@@ -196,12 +254,12 @@ const profile = () => {
                   <button
                     className="btn btn-primary rounded-full btn-sm text-white px-4 ml-2"
                     onClick={async () => {
-                      await updateProfile({ coverImg, profileImg });
+                      await uploadImage();
                       setCoverImg(null);
                       setProfileImg(null);
                     }}
                   >
-                    {isUpdatingProfile ? "Updating..." : "Update"}
+                    {isUploading ? "Updating..." : "Update"}
                   </button>
                 )}
               </div>
@@ -275,12 +333,16 @@ const profile = () => {
               </div>
             </>
           )}
-          <Posts feedType={feedType} username={tweetData.username} userId={id} />
+          <Posts
+            feedType={feedType}
+            username={tweetData.username}
+            userId={id}
+          />
         </div>
         <Trending />
       </div>
       {!user.username && <BottomBanner />}
-      <CommentModal/>
+      <CommentModal />
     </div>
   );
 };
