@@ -26,10 +26,9 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
-const Tweet = ({ data }) => {
+const Tweet = ({ data, refreshPosts, isRefreshed }) => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
- 
 
   const [isLiked, setIsLiked] = useState(false); // Tracks if the user has liked the post
   const [likesCount, setLikesCount] = useState(0); // Tracks the number of likes on the post
@@ -38,9 +37,9 @@ const Tweet = ({ data }) => {
   // Real-time listener for the post document using onSnapshot
   useEffect(() => {
     const tweetId = data?.tweetId;
-   
+
     const userId = user.uid;
-  
+
     if (!tweetId) return;
     const unsubscribe = onSnapshot(doc(db, "posts", tweetId), (docSnapshot) => {
       if (docSnapshot.exists()) {
@@ -55,7 +54,7 @@ const Tweet = ({ data }) => {
     });
 
     // Cleanup listener when component unmounts
-    return  unsubscribe;
+    return unsubscribe;
   }, [data.tweetId, user.uid]);
 
   // Function to toggle like/unlike
@@ -77,6 +76,9 @@ const Tweet = ({ data }) => {
         await updateDoc(postRef, {
           likes: arrayUnion(user.uid),
         });
+      }
+      if (isRefreshed) {
+        refreshPosts();
       }
     } catch (error) {
       console.error("Error toggling like:", error);

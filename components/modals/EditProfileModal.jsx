@@ -14,7 +14,7 @@ const EditProfileModal = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
-  console.log(user);
+
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -44,7 +44,7 @@ const EditProfileModal = () => {
   };
 
   const updateUserData = async (userId, userData) => {
-    console.log(userData);
+
     try {
       const userRef = doc(db, "users", userId); // Reference to the user document in Firestore
 
