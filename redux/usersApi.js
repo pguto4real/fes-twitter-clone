@@ -45,7 +45,7 @@ export const usersApi = createApi({
             userDoc,
             (snapshot) => {
               if (snapshot.exists()) {
-                console.log(12345678);
+              
                 // Convert timestamp to a serializable format if it exists
                 const userData = snapshot.data();
                 const formattedData = {
@@ -56,7 +56,7 @@ export const usersApi = createApi({
                     ? userData.timestamp.toDate().toISOString()
                     : null,
                 };
-                console.log(formattedData);
+            
                 resolve({ data: formattedData });
               } else {
                 reject({

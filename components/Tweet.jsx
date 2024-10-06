@@ -113,7 +113,7 @@ const Tweet = ({ data, refreshPosts, isRefreshed }) => {
         <TweetHeader
           username={data?.username}
           name={data?.name}
-          timestamp={data?.timestamp?.toDate()}
+          timestamp={data?.timestamp}
           text={data?.tweet}
           photoUrl={data?.photoUrl}
           tweetId={data?.tweetId}

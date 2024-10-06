@@ -15,7 +15,7 @@ const Trending = () => {
   const { nonMutualUsers, isLoadings } = useNonMutualUsers(currentUser.uid,followStatus);
 
   
-  console.log(nonMutualUsers);
+  // console.log(nonMutualUsers);
   return (
     <div className="hidden lg:flex flex-col ml-7 mt-4 ">
       <div

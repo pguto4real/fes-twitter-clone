@@ -36,11 +36,11 @@ const profile = () => {
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
 
-  const { data: posts, error, isLoading } = useGetPostsByUidQuery(id);
+ 
   const {
     data: users,
     error: userError,
-    isLoading:isUsersLoading,
+    isLoading,
   } = useGetUserByIdQuery(id);
 
   const [_, setForceUpdate] = useState(false); // State to force rerender
@@ -51,10 +51,10 @@ const profile = () => {
       setForceUpdate((prev) => !prev); // Toggle the force update state
     }
   }, [users]);
-  console.log(users)
+  // console.log(users)
   const [feedType, setFeedType] = useState("posts");
-console.log(isUsersLoading)
-console.log(isLoading)
+  // console.log(isUsersLoading)
+  // console.log(isLoading)
   const isMyProfile = currentUser.uid === users?.uid;
   return (
     <div>
@@ -67,7 +67,7 @@ console.log(isLoading)
 
         <div className="sm:ml-20 xl:ml-[350px] flex-grow border-x-gray-700 border-x max-w-2xl">
           {isLoading && <ProfileHeaderSkeleton />}
-          {!isUsersLoading && users && (
+          {!isLoading && users && (
             <>
               <div
                 className="px-3 
@@ -223,7 +223,12 @@ console.log(isLoading)
               </div>
             </>
           )}
-          <Posts feedType={feedType} username={users?.username} userId={id} />
+          <Posts
+            feedType={feedType}
+            username={users?.username}
+            userId={id}
+           
+          />
         </div>
         <Trending />
       </div>

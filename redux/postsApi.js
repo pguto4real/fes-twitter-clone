@@ -10,6 +10,7 @@ import {
   arrayRemove,
   query,
   where,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -33,21 +34,40 @@ export const postsApi = createApi({
       },
     }),
     getPostsByUid: builder.query({
-      async queryFn(uid) {
+      async queryFn({ uid, feedType }) {
         try {
+          let q;
           const postsRef = collection(db, "posts");
-          const q = query(postsRef, where("uid", "==", uid));
+// console.log('i got here')
+// console.log(feedType)
+          // Handle based on feed type
+          if (feedType === "posts") {
+            // Fetch posts by current user and users they follow
+            const userDoc = await getDoc(doc(db, "users", uid));
+            if (!userDoc.exists()) {
+              return { error: { status: "NOT_FOUND", message: "User not found" } };
+            }
+            // console.log(uid)
+            // console.log(userDoc)
+            const { following = [] } = userDoc.data();
+
+            // Get posts by current user and followed users
+            q = query(postsRef, where("uid", "in", [...following, uid]));
+          } else if (feedType === "likes") {
+            // Get posts liked by the current user
+            q = query(postsRef, where("likes", "array-contains", uid));
+          } else {
+            return { error: { status: "INVALID_FEED_TYPE", message: "Invalid feed type" } };
+          }
 
           return new Promise((resolve) => {
             const unsubscribe = onSnapshot(q, (querySnapshot) => {
               const posts = querySnapshot.docs.map((doc) => {
                 const data = doc.data();
-
-                // Convert the Timestamp to a serializable format
                 return {
                   id: doc.id,
                   ...data,
-                  timestamp: data.timestamp.toDate().toISOString(), // or .toDate().getTime()
+                  timestamp: data.timestamp?.toDate().toISOString() || null,
                 };
               });
               resolve({ data: posts });
@@ -56,9 +76,10 @@ export const postsApi = createApi({
             return () => unsubscribe();
           });
         } catch (error) {
-          return { error: error.message };
+          return { error: { status: "FETCH_ERROR", message: error.message } };
         }
       },
+      providesTags: (result, error, { uid }) => [{ type: "UserPosts", id: uid }],
     }),
     updatePostLike: builder.mutation({
       async queryFn({ postId, userId, isLiked }) {
@@ -72,6 +93,7 @@ export const postsApi = createApi({
           return { error: { status: "UPDATE_ERROR", message: error.message } };
         }
       },
+      invalidatesTags: (result, error, { id }) => [{ type: "UserPosts", id }],
     }),
     addPostComment: builder.mutation({
       async queryFn({ postId, comment }) {
