@@ -3,7 +3,6 @@ import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
 import {
   collection,
   doc,
-  getDocs,
   onSnapshot,
   updateDoc,
   arrayUnion,
@@ -14,7 +13,7 @@ import { db } from "../firebase";
 export const usersApi = createApi({
   reducerPath: "usersApi",
   baseQuery: fakeBaseQuery(),
-  tagTypes: ["UserFollowStatus", "User","UserPosts"],
+  tagTypes: ["UserFollowStatus", "User", "UserPosts"],
   endpoints: (builder) => ({
     getAllUsers: builder.query({
       queryFn: () => ({
@@ -46,18 +45,8 @@ export const usersApi = createApi({
             userDoc,
             (snapshot) => {
               if (snapshot.exists()) {
-                // Convert timestamp to a serializable format if it exists
                 const userData = snapshot.data();
-                const formattedData = {
-                  id: snapshot.id,
-                  ...userData,
-                  // Ensure any timestamp field is formatted
-                  timestamp: userData.timestamp
-                    ? userData.timestamp.toDate().toISOString()
-                    : null,
-                };
-
-                resolve({ data: formattedData });
+                resolve({ data: { id: snapshot.id, ...userData } });
               } else {
                 reject({
                   error: { status: "NOT_FOUND", message: "User not found" },
@@ -69,34 +58,35 @@ export const usersApi = createApi({
                 error: { status: "FETCH_ERROR", message: error.message },
               })
           );
-          // Cleanup function for unsubscribe
           return () => unsubscribe();
         });
       },
       providesTags: (result, error, userId) => [{ type: "User", id: userId }],
     }),
-    updateUserData: builder.mutation({
-      async queryFn({ userId, data }) {
+    
+    unfollowUser: builder.mutation({
+      async queryFn({ currentUserId, targetUserId }) {
         try {
-          const userRef = doc(db, "users", userId);
-          await updateDoc(userRef, data);
+          const currentUserRef = doc(db, "users", currentUserId);
+          const targetUserRef = doc(db, "users", targetUserId);
 
-          return { data: { userId, ...data } };
+          await Promise.all([
+            updateDoc(currentUserRef, { following: arrayRemove(targetUserId) }),
+            updateDoc(targetUserRef, { followers: arrayRemove(currentUserId) }),
+          ]);
+
+          return { data: { currentUserId, targetUserId } };
         } catch (error) {
           return { error: { status: "UPDATE_ERROR", message: error.message } };
         }
       },
-      invalidatesTags: (result, error, { id }) => [{ type: "User", id }],
+      invalidatesTags: ["UserFollowStatus"],
     }),
-   
-   
   }),
 });
 
 export const {
   useGetAllUsersQuery,
   useGetUserByIdQuery,
-  useUpdateUserDataMutation,
-  useFollowUserMutation,
-  useUnfollowUserMutation,
+  ,
 } = usersApi;

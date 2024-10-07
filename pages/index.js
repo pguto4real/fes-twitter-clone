@@ -23,7 +23,7 @@ export default function Home() {
       "
       >
         <SideBar />
-        <PostFeed />
+        <PostFeed currentUserId = {user.uid}/>
         <Trending />
       </div>
       {

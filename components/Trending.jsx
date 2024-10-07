@@ -6,14 +6,16 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import WhoToFollow from "./WhoToFollow";
 import useNonMutualUsers from "@/hooks/useNonMutualUsers";
+import { useGetNonMutualUsersQuery } from "@/redux/postsApi";
 
 const Trending = () => {
   const currentUser = useSelector((state) => state.user);
   const [unfollowedUsers, setUnfollowedUsers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
   const [followStatus, setFollowStatus] = useState(false);
-  const { nonMutualUsers, isLoadings } = useNonMutualUsers(currentUser.uid,followStatus);
-
+  // const { nonMutualUsers, isLoadings } = useNonMutualUsers(currentUser.uid,followStatus);
+  const { data: nonMutualUsers = [], isLoading, error } = useGetNonMutualUsersQuery(currentUser.uid);
+console.log(nonMutualUsers.data)
   
   // console.log(nonMutualUsers);
   return (
@@ -85,8 +87,8 @@ const Trending = () => {
       </div>
       <div className="bg-white bg-opacity-10 w-[300px] h-[300px] rounded-3xl mt-3">
         <h1 className="font-bold text-xl p-3">Who to follow</h1>
-        {nonMutualUsers.map((user) => (
-          <WhoToFollow user={user} currentUser={currentUser}/>
+        {nonMutualUsers.data?.map((user,index) => (
+          <WhoToFollow key ={index} user={user} currentUser={currentUser}/>
         ))}
 
       </div>

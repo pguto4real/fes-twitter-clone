@@ -6,17 +6,25 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useSelector } from "react-redux";
 import Link from "next/link";
+import { useGetPostsByUidQuery } from "@/redux/postsApi";
+import PostSkeleton from "./PostSkeleton";
 
-const PostFeed = () => {
-  const [tweets, SetTweets] = useState([]);
+const PostFeed = ({ currentUserId }) => {
+  // const [tweets, SetTweets] = useState([]);
 
-  useEffect(() => {
-    const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+  // useEffect(() => {
+  //   const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      SetTweets(snapshot.docs);
-    });
-  }, []);
+  //   const unsubscribe = onSnapshot(q, (snapshot) => {
+  //     SetTweets(snapshot.docs);
+  //   });
+  // }, []);
+
+  const {
+    data: tweets,
+    error,
+    isLoading,
+  } = useGetPostsByUidQuery({ uid: currentUserId, feedType: "index" });
 
   return (
     <div className="sm:ml-20 xl:ml-[350px] flex-grow border-x-gray-700 border-x max-w-2xl">
@@ -30,9 +38,17 @@ const PostFeed = () => {
         Home
       </div>
       <TweetInput />
-      {tweets.map((tweet) => {
-        return <Tweet key={tweet.data().tweetId} data={tweet.data()} />;
-      })}
+      {isLoading && (
+        <>
+          <PostSkeleton />
+          <PostSkeleton />
+          <PostSkeleton />
+        </>
+      )}
+      {!isLoading &&
+        tweets?.map((tweet) => {
+          return <Tweet key={tweet.tweetId} data={tweet} />;
+        })}
     </div>
   );
 };
