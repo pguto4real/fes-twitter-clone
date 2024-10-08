@@ -25,7 +25,7 @@ import {
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
-import { useUpdatePostLikeMutation } from "@/redux/postsApi";
+import { useDeletePostMutation, useUpdatePostLikeMutation } from "@/redux/postsApi";
 
 const Tweet = ({ data, refreshPosts, isRefreshed }) => {
   const dispatch = useDispatch();
@@ -95,18 +95,27 @@ const Tweet = ({ data, refreshPosts, isRefreshed }) => {
 
   const isAuthorized = user.uid === data?.uid;
 
-  const deleteTweet = async () => {
-    const tweetId = data.tweetId;
+  // const deleteTweet = async () => {
+  //   const tweetId = data.tweetId;
 
+  //   try {
+  //     const postRef = doc(db, "posts", tweetId);
+  //     await deleteDoc(postRef);
+  //     console.log("Post deleted successfully.");
+  //   } catch (error) {
+  //     console.error("Error deleting post:", error);
+  //   }
+  // };
+
+  const [deletePost, { isLoading, error }] = useDeletePostMutation();
+  const deleteTweet = async () => {
     try {
-      const postRef = doc(db, "posts", tweetId);
-      await deleteDoc(postRef);
+      await deletePost(data.tweetId).unwrap();
       console.log("Post deleted successfully.");
-    } catch (error) {
-      console.error("Error deleting post:", error);
+    } catch (err) {
+      console.error("Error deleting post:", err);
     }
   };
- 
   return (
     <div className="border-b border-gray-700">
       {/* <Link href={`${data?.tweetId}`}> */}

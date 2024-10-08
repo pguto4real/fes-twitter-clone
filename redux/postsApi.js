@@ -11,8 +11,13 @@ import {
   query,
   where,
   getDoc,
+  orderBy,
+  addDoc,
+  serverTimestamp,
+  deleteDoc,
 } from "firebase/firestore";
-import { db } from "../firebase";
+import { db, storage } from "../firebase";
+import { getDownloadURL, ref, uploadString } from "firebase/storage";
 
 export const postsApi = createApi({
   reducerPath: "postsApi",
@@ -37,14 +42,12 @@ export const postsApi = createApi({
     getPostsByUid: builder.query({
       async queryFn({ uid, feedType }) {
         try {
-          console.log(1234);
           let q;
           const postsRef = collection(db, "posts");
           // console.log('i got here')
-          // console.log(feedType)
+          console.log(feedType);
           // Handle based on feed type
           if (feedType === "posts") {
-            console.log("i got here3");
             // Fetch posts by current user and users they follow
             const userDoc = await getDoc(doc(db, "users", uid));
             if (!userDoc.exists()) {
@@ -58,13 +61,19 @@ export const postsApi = createApi({
 
             // Get posts by current user and followed users
             //
-            q = query(postsRef, where("uid", "==", uid));
+            q = query(
+              postsRef,
+              where("uid", "==", uid),
+              orderBy("timestamp", "desc")
+            );
           } else if (feedType === "likes") {
-            console.log("i got here1");
             // Get posts liked by the current user
-            q = query(postsRef, where("likes", "array-contains", uid));
+            q = query(
+              postsRef,
+              where("likes", "array-contains", uid),
+              orderBy("timestamp", "desc")
+            );
           } else if (feedType === "index") {
-            console.log("i got here2");
             const userDoc = await getDoc(doc(db, "users", uid));
             if (!userDoc.exists()) {
               return {
@@ -74,7 +83,12 @@ export const postsApi = createApi({
             // console.log(uid)
             // console.log(userDoc)
             const { following = [] } = userDoc.data();
-            q = query(postsRef, where("uid", "in", [...following, uid]));
+
+            q = query(
+              postsRef,
+              where("uid", "in", [...following, uid]),
+              orderBy("timestamp", "desc")
+            );
           } else {
             return {
               error: {
@@ -88,7 +102,7 @@ export const postsApi = createApi({
             const unsubscribe = onSnapshot(q, (querySnapshot) => {
               const posts = querySnapshot.docs.map((doc) => {
                 const data = doc.data();
-                console.log(data);
+
                 return {
                   id: doc.id,
                   ...data,
@@ -125,6 +139,49 @@ export const postsApi = createApi({
           return { error: { status: "UPDATE_ERROR", message: error.message } };
         }
       },
+      invalidatesTags: (result, error, { postId }) => [
+        { type: "UserPosts", id: postId },
+        "UserFollowStatus",
+      ],
+    }),
+    createTweet: builder.mutation({
+      async queryFn({ userData, text, image }, { dispatch }) {
+        try {
+          // Step 1: Add a new tweet document
+          const docRef = await addDoc(collection(db, "posts"), {
+            username: userData.username,
+            name: userData.name,
+            email: userData.email,
+            uid: userData.uid,
+            timestamp: serverTimestamp(),
+            photoUrl: userData.photoUrl,
+            tweet: text,
+            likes: [],
+          });
+
+          const postId = docRef.id;
+
+          // Step 2: Update the document with tweetId
+          await updateDoc(docRef, { tweetId: postId });
+
+          // Step 3: If there's an image, upload it and update the document with image URL
+          if (image) {
+            const imageRef = ref(storage, `tweetImages/${postId}`);
+            await uploadString(imageRef, image, "data_url");
+            const downloadUrl = await getDownloadURL(imageRef);
+            await updateDoc(docRef, { image: downloadUrl });
+          }
+
+          // Optional: Clear local state if needed
+          dispatch(postsApi.util.resetApiState());
+
+          // Return the created tweet data as result
+          return { data: { id: postId, ...docRef.data() } };
+        } catch (error) {
+          return { error: { status: "ERROR", message: error.message } };
+        }
+      },
+      // This ensures that the posts list updates when a new tweet is added
       invalidatesTags: (result, error, { postId }) => [
         { type: "UserPosts", id: postId },
         "UserFollowStatus",
@@ -181,16 +238,45 @@ export const postsApi = createApi({
         }
       },
     }),
+    deletePost: builder.mutation({
+      async queryFn(tweetId) {
+        try {
+          // Reference the post document by tweetId
+          const postRef = doc(db, "posts", tweetId);
+
+          // Delete the document
+          await deleteDoc(postRef);
+
+          // Return a success response
+          return { data: { success: true } };
+        } catch (error) {
+          // Return an error response
+          return { error: { status: "DELETE_ERROR", message: error.message } };
+        }
+      },
+      // Invalidate UserPosts and UserFollowStatus to trigger a refresh
+      invalidatesTags: (result, error, tweetId) => [
+        { type: "UserPosts" },
+        { type: "UserFollowStatus" },
+      ],
+    }),
     getNonMutualUsers: builder.query({
       queryFn: (currentUserId) => ({
         data: new Promise(async (resolve, reject) => {
           try {
-            // Step 1: Fetch the following and followers lists of the current user
+            // Step 1: Fetch the following list of the current user
             const currentUserRef = doc(db, "users", currentUserId);
             const currentUserDoc = await getDoc(currentUserRef);
-            const { following = [], followers = [] } = currentUserDoc.exists()
-              ? currentUserDoc.data()
-              : {};
+
+            // Check if the user document exists
+            if (!currentUserDoc.exists()) {
+              return reject({
+                error: { status: "NOT_FOUND", message: "User not found" },
+              });
+            }
+
+            // Use an empty array if following is missing or null
+            const { following = [] } = currentUserDoc.data() || {};
 
             // Step 2: Query all users except the current user
             const usersRef = collection(db, "users");
@@ -205,21 +291,27 @@ export const postsApi = createApi({
               (querySnapshot) => {
                 const filteredUsers = [];
                 querySnapshot.forEach((doc) => {
-                  const userData = { id: doc.id, ...doc.data() };
+                  const userData = doc.data();
                   const userId = userData.uid;
 
                   // Check if the user is not mutually following
-                  const isNotMutuallyFollowing =
-                    !following.includes(userId) && !followers.includes(userId);
-
-                  if (isNotMutuallyFollowing) {
-                    filteredUsers.push(userData);
+                  if (!following.includes(userId)) {
+                    // Convert any Timestamp fields to ISO strings for serialization
+                    const serializableData = {
+                      ...userData,
+                      id: doc.id,
+                      timestamp: userData.timestamp
+                        ? userData.timestamp.toDate().toISOString()
+                        : null,
+                    };
+                    filteredUsers.push(serializableData);
                   }
                 });
 
                 resolve({ data: filteredUsers });
               },
               (error) => {
+                console.error("Error onSnapshot:", error);
                 reject({
                   error: { status: "FETCH_ERROR", message: error.message },
                 });
@@ -228,6 +320,7 @@ export const postsApi = createApi({
 
             return () => unsubscribe();
           } catch (error) {
+            console.error("Error in getNonMutualUsers:", error);
             reject({
               error: { status: "FETCH_ERROR", message: error.message },
             });
@@ -247,4 +340,6 @@ export const {
   useFollowUserMutation,
   useUnfollowUserMutation,
   useGetNonMutualUsersQuery,
+  useCreateTweetMutation,
+  useDeletePostMutation,
 } = postsApi;

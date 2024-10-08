@@ -97,6 +97,6 @@ export const {
   useGetAllUsersQuery,
   useGetUserByIdQuery,
   useUpdateUserDataMutation,
-  useFollowUserMutation,
-  useUnfollowUserMutation,
+  // useFollowUserMutation,
+  // useUnfollowUserMutation,
 } = usersApi;

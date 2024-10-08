@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { db, storage } from "@/firebase";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
+import { useCreateTweetMutation } from "@/redux/postsApi";
 
 const TweetInput = () => {
   const user = useSelector((state) => state.user);
@@ -25,11 +26,11 @@ const TweetInput = () => {
 
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [createTweet, { isLoading }] = useCreateTweetMutation();
 
-  async function sendTweet() {
-    setLoading(true);
-    const docRef = await addDoc(collection(db, "posts"), {
+
+  const handleSendTweet = async () => {
+    const userData = {
       username: user.username,
       name: user.name,
       email: user.email,
@@ -38,20 +39,11 @@ const TweetInput = () => {
       timestamp: serverTimestamp(),
       tweet: text,
       likes: [],
-    });
-    const postId = docRef.id;
-    await updateDoc(docRef, { tweetId: postId });
-    if (image) {
-      const imageRef = ref(storage, `tweetImages/${postId}`);
-      const uploadImage = await uploadString(imageRef, image, "data_url");
-
-      const downloadUrl = await getDownloadURL(imageRef);
-      await updateDoc(docRef, { image: downloadUrl });
-    }
+    };
+    await createTweet({ userData, text, image });
     setText("");
     setImage(null);
-    setLoading(false);
-  }
+  };
 
   function addImageToTweet(e) {
     const reader = new FileReader();
@@ -67,11 +59,11 @@ const TweetInput = () => {
     <div className="flex space-x-3 p-3 border-b border-gray-700">
       <img
         className="w-11 h-11 rounded-full object-cover"
-        src={`${user.photoUrl ||  '/assets/avatar-placeholder.png/'}`}
+        src={`${user.photoUrl || "/assets/avatar-placeholder.png/"}`}
         alt=""
       />
 
-      {!loading ? (
+      {!isLoading ? (
         <div className="w-full">
           <textarea
             name=""
@@ -118,7 +110,7 @@ const TweetInput = () => {
             <div>
               <button
                 disabled={!text && !image}
-                onClick={sendTweet}
+                onClick={handleSendTweet}
                 className={` bg-[#1d9bf0] rounded-full  px-4 py-1.5 
                 disabled:opacity-50 disabled:cursor-not-allowed
                 `}

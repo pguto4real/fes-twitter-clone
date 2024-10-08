@@ -15,7 +15,7 @@ const Trending = () => {
   const [followStatus, setFollowStatus] = useState(false);
   // const { nonMutualUsers, isLoadings } = useNonMutualUsers(currentUser.uid,followStatus);
   const { data: nonMutualUsers = [], isLoading, error } = useGetNonMutualUsersQuery(currentUser.uid);
-console.log(nonMutualUsers.data)
+
   
   // console.log(nonMutualUsers);
   return (
