@@ -10,13 +10,8 @@ import React, { useRef, useState } from "react";
 import TweetInputIcons from "./TweetInputIcons";
 import { useSelector } from "react-redux";
 import {
-  addDoc,
-  collection,
   serverTimestamp,
-  updateDoc,
 } from "firebase/firestore";
-import { db, storage } from "@/firebase";
-import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { useCreateTweetMutation } from "@/redux/postsApi";
 
 const TweetInput = () => {

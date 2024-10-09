@@ -17,13 +17,8 @@ import {
 import Link from "next/link";
 import { db } from "@/firebase";
 import {
-  arrayRemove,
-  arrayUnion,
-  deleteDoc,
   doc,
-  getDoc,
   onSnapshot,
-  updateDoc,
 } from "firebase/firestore";
 import { useDeletePostMutation, useUpdatePostLikeMutation } from "@/redux/postsApi";
 
@@ -65,47 +60,8 @@ const Tweet = ({ data, refreshPosts, isRefreshed }) => {
     const postId = data?.tweetId;
     await updatePostLike({ postId, userId, isLiked });
   };
-  // Function to toggle like/unlike
-  // const likeComment = async () => {
-  //   if (!user.username) {
-  //     dispatch(openLogInModal());
-  //     return;
-  //   }
-  //   const postRef = doc(db, "posts", data.tweetId);
-
-  //   try {
-  //     if (isLiked) {
-  //       // If the user has liked the post, unlike it
-  //       await updateDoc(postRef, {
-  //         likes: arrayRemove(user.uid),
-  //       });
-  //     } else {
-  //       // If the user hasn't liked the post, like it
-  //       await updateDoc(postRef, {
-  //         likes: arrayUnion(user.uid),
-  //       });
-  //     }
-  //     if (isRefreshed) {
-  //       refreshPosts();
-  //     }
-  //   } catch (error) {
-  //     console.error("Error toggling like:", error);
-  //   }
-  // };
-
+  
   const isAuthorized = user.uid === data?.uid;
-
-  // const deleteTweet = async () => {
-  //   const tweetId = data.tweetId;
-
-  //   try {
-  //     const postRef = doc(db, "posts", tweetId);
-  //     await deleteDoc(postRef);
-  //     console.log("Post deleted successfully.");
-  //   } catch (error) {
-  //     console.error("Error deleting post:", error);
-  //   }
-  // };
 
   const [deletePost, { isLoading, error }] = useDeletePostMutation();
   const deleteTweet = async () => {

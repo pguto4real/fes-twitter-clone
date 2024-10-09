@@ -5,12 +5,11 @@ import React from "react";
 
 const FollowButton = ({ currentUserId, targetUserId, className }) => {
   const { isFollowing, isLoading } = useFollow(currentUserId, targetUserId);
-  console.log(isFollowing);
+
   const [followUser] = useFollowUserMutation();
   const [unfollowUser] = useUnfollowUserMutation();
 
   const handleFollow = async () => {
-    console.log(isFollowing);
     !isFollowing
       ? await followUser({
           currentUserId,

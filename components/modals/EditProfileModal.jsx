@@ -1,12 +1,10 @@
-import { db } from "@/firebase";
+
 import {
   closeEditProfileModal,
   openEditProfileModal,
 } from "@/redux/modalSlice";
 import { useUpdateUserDataMutation } from "@/redux/usersApi";
-import { updateUser } from "@/redux/userSlice";
 import Modal from "@mui/material/Modal";
-import { doc, updateDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -46,33 +44,21 @@ const EditProfileModal = () => {
   const [updateUser, { isLoading, isSuccess, error }] =
     useUpdateUserDataMutation();
   const updateUserData = async (userId, userData) => {
-    console.log(userData);
+
     const cleanData = Object.fromEntries(
       Object.entries(userData).filter(
         ([_, value]) => value !== undefined && value !== ""
       )
     );
-    console.log("Clean data to update:", cleanData);
+ 
     try {
       await updateUser({ userId, data: cleanData }).unwrap();
      
     } catch (error) {
       console.error("Failed to update user: ", error);
     }
-    //  dispatch(updateUser(userData));
       dispatch(closeEditProfileModal());
-    // try {
-    //   const userRef = doc(db, "users", userId); // Reference to the user document in Firestore
-
-    //   // Update user data in Firestore
-    //   await updateDoc(userRef, userData);
-
-    //   // Dispatch the updateUser action to update the Redux store
-    //   dispatch(updateUser(userData));
-    //   dispatch(closeEditProfileModal());
-    // } catch (error) {
-    //   console.error("Error updating user data:", error);
-    // }
+   
   };
   return (
     <>

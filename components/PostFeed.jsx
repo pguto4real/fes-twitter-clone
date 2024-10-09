@@ -2,23 +2,11 @@ import React, { useEffect, useState } from "react";
 
 import TweetInput from "./TweetInput";
 import Tweet from "./Tweet";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { db } from "@/firebase";
-import { useSelector } from "react-redux";
-import Link from "next/link";
 import { useGetPostsByUidQuery } from "@/redux/postsApi";
 import PostSkeleton from "./PostSkeleton";
 
 const PostFeed = ({ currentUserId }) => {
-  // const [tweets, SetTweets] = useState([]);
-
-  // useEffect(() => {
-  //   const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
-
-  //   const unsubscribe = onSnapshot(q, (snapshot) => {
-  //     SetTweets(snapshot.docs);
-  //   });
-  // }, []);
+  
 
   const {
     data: tweets,

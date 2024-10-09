@@ -5,11 +5,9 @@ import {
   HashtagIcon,
   InboxIcon,
   BookmarkIcon,
-  ClipboardListIcon,
   BellIcon,
   UserIcon,
   DotsCircleHorizontalIcon,
-  BadgeCheckIcon,
   DotsHorizontalIcon,
 } from "@heroicons/react/outline";
 import Image from "next/image";
@@ -22,7 +20,7 @@ import { closeLogInModal, closeSignUpModal } from "@/redux/modalSlice";
 const SideBar = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
-// console.log(user)
+
   async function handleSignOut() {
     await signOut(auth);
     dispatch(signOutUser());
@@ -31,9 +29,7 @@ const SideBar = () => {
   }
   return (
     <div className=" xl:ml-24  hidden sm:flex flex-col fixed justify-between h-full">
-      {/* <Link to='/' className='flex justify-center md:justify-start'>
-					<XSvg className='px-2 w-12 h-12 rounded-full fill-white hover:bg-stone-900' />
-				</Link> */}
+
       <div className="mx-auto">
         <nav className="xl:space-y-1.5">
           <div className="xl:justify-start flex justify-center items-center py-3 xl:p-3">

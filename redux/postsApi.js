@@ -44,8 +44,7 @@ export const postsApi = createApi({
         try {
           let q;
           const postsRef = collection(db, "posts");
-          // console.log('i got here')
-          console.log(feedType);
+
           // Handle based on feed type
           if (feedType === "posts") {
             // Fetch posts by current user and users they follow
@@ -55,8 +54,7 @@ export const postsApi = createApi({
                 error: { status: "NOT_FOUND", message: "User not found" },
               };
             }
-            // console.log(uid)
-            // console.log(userDoc)
+        
             const { following = [] } = userDoc.data();
 
             // Get posts by current user and followed users
@@ -300,8 +298,8 @@ export const postsApi = createApi({
                     const serializableData = {
                       ...userData,
                       id: doc.id,
-                      timestamp: userData.timestamp
-                        ? userData.timestamp.toDate().toISOString()
+                      timestamp: userData?.timestamp
+                        ? userData?.timestamp.toDate().toISOString()
                         : null,
                     };
                     filteredUsers.push(serializableData);
@@ -329,6 +327,7 @@ export const postsApi = createApi({
       }),
       providesTags: ["UserFollowStatus"],
     }),
+    
   }),
 });
 

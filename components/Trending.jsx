@@ -1,11 +1,8 @@
-import { db } from "@/firebase";
+
 import { DotsHorizontalIcon, SearchIcon } from "@heroicons/react/outline";
-import { BadgeCheckIcon } from "@heroicons/react/solid";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import WhoToFollow from "./WhoToFollow";
-import useNonMutualUsers from "@/hooks/useNonMutualUsers";
 import { useGetNonMutualUsersQuery } from "@/redux/postsApi";
 
 const Trending = () => {

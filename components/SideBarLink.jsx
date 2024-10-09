@@ -1,6 +1,5 @@
 import Link from "next/link";
 import React from "react";
-import { useSelector } from "react-redux";
 
 const SideBarLink = ({ text, Icon, href }) => {
 

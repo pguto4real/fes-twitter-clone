@@ -8,9 +8,12 @@ import ProfileHeaderSkeleton from "@/components/ProfileHeaderSkeleton";
 import SideBar from "@/components/SideBar";
 import Trending from "@/components/Trending";
 import { db, storage } from "@/firebase";
-import { useGetAllPostsQuery, useGetPostsByUidQuery } from "@/redux/postsApi";
 import { setUserProfile } from "@/redux/userProfileSlice";
-import { useGetUserByIdQuery } from "@/redux/usersApi";
+import {
+  useGetUserByIdQuery,
+  useUploadImageDataMutation,
+  useUploadImageMutation,
+} from "@/redux/usersApi";
 
 import {
   ArrowLeftIcon,
@@ -18,44 +21,67 @@ import {
   LinkIcon,
 } from "@heroicons/react/outline";
 import { PencilIcon } from "@heroicons/react/solid";
-import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
-import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
-import Moment from "react-moment";
 import { useSelector } from "react-redux";
-
 const profile = () => {
   const currentUser = useSelector((state) => state.user);
-  const router = useRouter();
-  const id = router.query.id;
+
   const [coverImg, setCoverImg] = useState(null);
   const [profileImg, setProfileImg] = useState(null);
+  const [feedType, setFeedType] = useState("posts");
+
+  const router = useRouter();
+  const userId = router.query.id;
+
 
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
 
- 
   const {
     data: users,
     error: userError,
-    isLoading,
-  } = useGetUserByIdQuery(id);
+    isLoading: userLoading,
+  } = useGetUserByIdQuery(userId);
 
-  const [_, setForceUpdate] = useState(false); // State to force rerender
-
-  useEffect(() => {
-    // Force a rerender when the user data changes
-    if (users) {
-      setForceUpdate((prev) => !prev); // Toggle the force update state
-    }
-  }, [users]);
-  // console.log(users)
-  const [feedType, setFeedType] = useState("posts");
-  // console.log(isUsersLoading)
-  // console.log(isLoading)
   const isMyProfile = currentUser.uid === users?.uid;
+
+  const handleImgChange = (e, state) => {
+    const reader = new FileReader();
+    if (e.target.files[0]) {
+      reader.readAsDataURL(e.target.files[0]);
+    }
+    reader.addEventListener("load", (e) => {
+      if (state === "coverImg") {
+        setCoverImg(e.target.result);
+      } else {
+        setProfileImg(e.target.result);
+      }
+    });
+  };
+
+  const [uploadImage, { isLoading }] = useUploadImageDataMutation();
+  const handleUpload = async () => {
+    try {
+      if (coverImg) {
+        await uploadImage({
+          userId: currentUser.uid,
+          imageType: "cover",
+          imageData: coverImg,
+        });
+      } else if (profileImg) {
+        await uploadImage({
+          userId: currentUser.uid,
+          imageType: "profile",
+          imageData: profileImg,
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
+
   return (
     <div>
       <div
@@ -66,8 +92,8 @@ const profile = () => {
         <SideBar />
 
         <div className="sm:ml-20 xl:ml-[350px] flex-grow border-x-gray-700 border-x max-w-2xl">
-          {isLoading && <ProfileHeaderSkeleton />}
-          {!isLoading && users && (
+          {userLoading && <ProfileHeaderSkeleton />}
+          {!userLoading && users && (
             <>
               <div
                 className="px-3 
@@ -83,9 +109,7 @@ const profile = () => {
               </div>
               <div className="relative group/cover">
                 <img
-                  src={
-                    coverImg || currentUser?.coverImage || "/assets/cover.png"
-                  }
+                  src={coverImg || users?.coverImage || "/assets/cover.png"}
                   className="h-52 w-full object-cover"
                   alt="cover image"
                 />
@@ -135,21 +159,29 @@ const profile = () => {
                 {isMyProfile && <EditProfileModal />}
                 {!isMyProfile && (
                   <FollowButton
-                    currentUserId={currentUser.uid}
-                    targetUserId={users.uid}
-                    className={"btn btn-outline rounded-full btn-sm"}
-                  />
+                  currentUserId={currentUser.uid}
+                  targetUserId={users.uid}
+                  className={"bg-white text-black text-sm w-20 h-8 rounded-3xl"}
+                />
+                //   <button
+                //     className="btn btn-outline rounded-full btn-sm"
+                //     onClick={() => follow(currentUser?._id)}
+                //   >
+                //     {isPendingFollow && <LoadingSpinner size="sm" />}
+                //     {!isPending && amIFollowing && "UnFollow"}
+                // {!isPending && !amIFollowing && "Follow"}
+                //   </button>
                 )}
                 {(coverImg || profileImg) && (
                   <button
                     className="btn btn-primary rounded-full btn-sm text-white px-4 ml-2"
                     onClick={async () => {
-                      await uploadImage();
+                      handleUpload();
                       setCoverImg(null);
                       setProfileImg(null);
                     }}
                   >
-                    {isUploading ? "Updating..." : "Update"}
+                    {isLoading ? "Updating..." : "Update"}
                   </button>
                 )}
               </div>
@@ -226,8 +258,7 @@ const profile = () => {
           <Posts
             feedType={feedType}
             username={users?.username}
-            userId={id}
-           
+            userId={userId}
           />
         </div>
         <Trending />

@@ -5,123 +5,21 @@ import { FaHeart, FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
 
-
-import toast from "react-hot-toast";
 import LoadingSpinner from "./LoadingSpinner";
-// import { formatPostDate } from "../../utils/date/functions";
+
 import Link from "next/link";
 import { useSelector } from "react-redux";
-// import { formatPostDate } from "../../utils/date";
 
 const Post = ({ post }) => {
   const [comment, setComment] = useState("");
   const currentUser = useSelector((state) => state.user);
   const postOwner = post.user;
-console.log(post)
+  console.log(post);
   const isMyPost = post.uid === currentUser.uid;
 
   const [isLiked, setIsLiked] = useState(
     post.likes.some((like) => like._id === currentUser._id)
   );
-
-  // const formattedDate = formatPostDate(post.createdAt);
-
-  // const queryClient = useQueryClient();
-  // const { mutate: deletePostMutation, isPending: isDeleting } = useMutation({
-  //   mutationFn: async () => {
-  //     try {
-  //       const res = await fetch(`/api/posts/${post._id}`, {
-  //         method: "DELETE",
-  //       });
-  //       const data = await res.json();
-  //       if (!res.ok) throw new Error(data.error || "Failed to delete post");
-  //       if (data.error) throw new Error(data.error);
-  //     } catch (error) {
-  //       throw error;
-  //     }
-  //   },
-  //   onSuccess: () => {
-  //     toast.success("Post deleted Successful");
-  //     queryClient.invalidateQueries({ queryKey: ["posts"] });
-  //   },
-  //   onError: () => {
-  //     toast.error("cant find post");
-  //   },
-  // });
-
-  // const { mutate: likeUnlikeMutation, isPending: isLiking } = useMutation({
-  //   mutationFn: async () => {
-  //     try {
-  //       const res = await fetch(`api/posts/like/${post._id}`, {
-  //         method: "POST",
-  //       });
-  //       const data = await res.json();
-  //       if (!res.ok) throw new Error(data.error || "Failed to like post");
-  //       if (data.error) throw new Error(data.error);
-
-  //       return data;
-  //     } catch (error) {
-  //       throw error;
-  //     }
-  //   },
-  //   onSuccess: (updatedLikes) => {
-  //     queryClient.setQueryData(["posts"], (oldData) => {
-  //       return oldData.map((p) => {
-  //         if (p._id === post._id) {
-  //           return { ...p, likes: updatedLikes.data };
-  //         }
-  //         return p;
-  //       });
-  //     });
-  //   },
-  //   onError: () => {
-  //     toast.error(error.message);
-  //   },
-  // });
-  // const { mutate: commentPost, isPending: isCommenting } = useMutation({
-  //   mutationFn: async (text) => {
-
-  //     try {
-  //       const res = await fetch(`/api/posts/comment/${post._id}`, {
-  //         method: "POST",
-  //         headers: {
-  //           "content-type": "application/json",
-  //         },
-  //         body: JSON.stringify({ text: comment }),
-  //       });
-  //       const data = await res.json();
-  //       if (!res.ok) throw new Error(data.error || "Failed to comment on post");
-  //       if (data.error) throw new Error(data.error);
-
-  //       return data;
-  //     } catch (error) {
-  //       throw error;
-  //     }
-  //   },
-  //   onSuccess: (updatedLikes) => {
-  //     toast.success("Comment Posted Successful");
-
-  //     queryClient.invalidateQueries({ queryKey: ["posts"] });
-  //   },
-  //   onError: () => {
-  //     toast.error(error.message);
-  //   },
-  // });
-  // const handleDeletePost = () => {
-  //   deletePostMutation();
-  // };
-
-  // const handlePostComment = (e) => {
-  //   e.preventDefault();
-  //   if (isCommenting) return;
-  //   commentPost(comment);
-  // };
-
-  // const handleLikePost = () => {
-  //   setIsLiked((prev) => !prev);
-  //   if (isLiking) return;
-  //   likeUnlikeMutation();
-  // };
 
   return (
     <>
