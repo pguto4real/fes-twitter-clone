@@ -12,28 +12,51 @@ import React from "react";
 import Moment from "react-moment";
 import { useSelector } from "react-redux";
 export const getServerSideProps = async (context) => {
-  const id = context.query.id; // Extract dynamic route param
-  const docRef = doc(db, "posts", id);
-  const tweetDoc = await getDoc(docRef);
-  const data = tweetDoc.data();
-  // console.log(data)
-  const formattedData = {
-    username: data.username,
-    name: data.name,
-    email: data.email,
-    uid: data.uid,
-    photoUrl: data.photoUrl,
-    image: data.image || null,
-    tweet: data.tweet,
-    comments: data.comment || null,
-    timestamp: JSON.stringify(data.timestamp.toDate()),
-  };
+  const id = context.query.id;
 
-  return {
-    props: {
-      tweetData: formattedData,
-    },
-  };
+  try {
+    const docRef = doc(db, 'posts', id);
+    const tweetDoc = await getDoc(docRef);
+
+    if (!tweetDoc.exists()) {
+      // If the document does not exist, return a 404 page
+      return {
+        notFound: true,
+      };
+    }
+
+    const data = tweetDoc.data();
+
+    // Safely extract data fields and handle any missing ones
+    const formattedData = {
+      username: data?.username || 'Unknown',
+      name: data?.name || 'Anonymous',
+      email: data?.email || '',
+      uid: data?.uid || '',
+      photoUrl: data?.photoUrl || '/default-avatar.png',
+      image: data?.image || null,
+      tweet: data?.tweet || '',
+      comments: data?.comment || null,
+      timestamp: data.timestamp ? JSON.stringify(data.timestamp.toDate()) : null,
+    };
+
+    return {
+      props: {
+        tweetData: formattedData,
+      },
+    };
+
+  } catch (error) {
+    console.error('Error fetching tweet:', error);
+
+    // Optionally, you can return a fallback page or redirect
+    return {
+      props: {
+        tweetData: null,
+        error: 'Failed to load tweet data',
+      },
+    };
+  }
 };
 const CommentsPage = ({ tweetData }) => {
   const user = useSelector((state) => state.user);
