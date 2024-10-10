@@ -24,10 +24,62 @@ export const postsApi = createApi({
   baseQuery: fakeBaseQuery(),
   tagTypes: ["UserFollowStatus", "UserPosts"],
   endpoints: (builder) => ({
+    getTweetById: builder.query({
+      // Using async onSnapshot to get real-time updates
+      async queryFn({ tweetId }) {
+        try {
+          if (!tweetId) {
+            return {
+              error: {
+                status: "INVALID_REQUEST",
+                message: "Tweet ID is required",
+              },
+            };
+          }
+          console.log(tweetId);
+          // Return a Promise that resolves when onSnapshot fetches data
+          return new Promise((resolve) => {
+            const docRef = doc(db, "posts", tweetId);
+
+            const unsubscribe = onSnapshot(docRef, (docSnapshot) => {
+              if (docSnapshot.exists()) {
+                const data = docSnapshot.data();
+
+                const formattedData = {
+                  username: data?.username || "Unknown",
+                  name: data?.name || "Anonymous",
+                  email: data?.email || "",
+                  uid: data?.uid || "",
+                  photoUrl: data?.photoUrl || "/default-avatar.png",
+                  image: data?.image || null,
+                  tweet: data?.tweet || "",
+                  comments: data?.comment || null,
+                  timestamp: data.timestamp
+                    ? data.timestamp.toDate().toISOString()
+                    : null,
+                };
+
+                resolve({ data: formattedData });
+              } else {
+                resolve({
+                  error: { status: "NOT_FOUND", message: "Tweet not found" },
+                });
+              }
+            });
+
+            return () => unsubscribe(); // Cleanup on unmount
+          });
+        } catch (error) {
+          console.error("Error fetching tweet:", error);
+          return { error: { status: "FETCH_ERROR", message: error.message } };
+        }
+      },
+      providesTags: (result, error, tweetId) => [{ type: "Tweet", tweetId }],
+    }),
     getAllPosts: builder.query({
       async queryFn() {
         try {
-          console.log('i got here')
+          console.log("i got here");
           const postsCollection = collection(db, "posts");
           const postsSnapshot = await getDocs(postsCollection);
           const posts = postsSnapshot.docs.map((doc) => ({
@@ -263,44 +315,65 @@ export const postsApi = createApi({
       queryFn: (currentUserId) => ({
         data: new Promise(async (resolve, reject) => {
           try {
-            // Step 1: Fetch the following list of the current user
+            const usersRef = collection(db, "users");
+
+            // If currentUserId is null, fetch all users
+            if (!currentUserId) {
+              const unsubscribe = onSnapshot(
+                usersRef,
+                (querySnapshot) => {
+                  const allUsers = querySnapshot.docs.map((doc) => ({
+                    ...doc.data(),
+                    id: doc.id,
+                    timestamp: doc.data().timestamp
+                      ? doc.data().timestamp.toDate().toISOString()
+                      : null,
+                  }));
+
+                  resolve({ data: allUsers });
+                },
+                (error) => {
+                  console.error("Error onSnapshot:", error);
+                  reject({
+                    error: { status: "FETCH_ERROR", message: error.message },
+                  });
+                }
+              );
+
+              return () => unsubscribe();
+            }
+
+            // If currentUserId is provided, fetch non-mutual users
             const currentUserRef = doc(db, "users", currentUserId);
             const currentUserDoc = await getDoc(currentUserRef);
 
-            // Check if the user document exists
             if (!currentUserDoc.exists()) {
               return reject({
                 error: { status: "NOT_FOUND", message: "User not found" },
               });
             }
 
-            // Use an empty array if following is missing or null
-            const { following = [] } = currentUserDoc.data() || {};
+            const { following } = currentUserDoc.data() || {};
+            const followingArray = Array.isArray(following) ? following : [];
 
-            // Step 2: Query all users except the current user
-            const usersRef = collection(db, "users");
             const usersQuery = query(
               usersRef,
               where("uid", "!=", currentUserId)
             );
-
-            // Step 3: Use onSnapshot to listen for real-time updates
             const unsubscribe = onSnapshot(
               usersQuery,
               (querySnapshot) => {
                 const filteredUsers = [];
                 querySnapshot.forEach((doc) => {
                   const userData = doc.data();
-                  const userId = userData.uid;
+                  const userId = userData?.uid;
 
-                  // Check if the user is not mutually following
-                  if (!following.includes(userId)) {
-                    // Convert any Timestamp fields to ISO strings for serialization
+                  if (userData && userId && !followingArray.includes(userId)) {
                     const serializableData = {
                       ...userData,
                       id: doc.id,
-                      timestamp: userData?.timestamp
-                        ? userData?.timestamp.toDate().toISOString()
+                      timestamp: userData.timestamp
+                        ? userData.timestamp.toDate().toISOString()
                         : null,
                     };
                     filteredUsers.push(serializableData);
@@ -328,11 +401,12 @@ export const postsApi = createApi({
       }),
       providesTags: ["UserFollowStatus"],
     }),
+
     fetchPosts: builder.query({
       async queryFn({ uid, isLoggedIn, feedType }) {
-        console.log(isLoggedIn)
+        console.log(isLoggedIn);
         if (!isLoggedIn) {
-          console.log(12344)
+          console.log(12344);
           return await api.endpoints.getAllPosts.initiate();
         } else {
           return await api.endpoints.getPostsByUid.initiate({ uid, feedType });
@@ -353,4 +427,5 @@ export const {
   useCreateTweetMutation,
   useDeletePostMutation,
   useFetchPostsQuery,
+  useGetTweetByIdQuery,
 } = postsApi;
