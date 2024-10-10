@@ -27,6 +27,7 @@ export const postsApi = createApi({
     getAllPosts: builder.query({
       async queryFn() {
         try {
+          console.log('i got here')
           const postsCollection = collection(db, "posts");
           const postsSnapshot = await getDocs(postsCollection);
           const posts = postsSnapshot.docs.map((doc) => ({
@@ -54,7 +55,7 @@ export const postsApi = createApi({
                 error: { status: "NOT_FOUND", message: "User not found" },
               };
             }
-        
+
             const { following = [] } = userDoc.data();
 
             // Get posts by current user and followed users
@@ -327,7 +328,17 @@ export const postsApi = createApi({
       }),
       providesTags: ["UserFollowStatus"],
     }),
-    
+    fetchPosts: builder.query({
+      async queryFn({ uid, isLoggedIn, feedType }) {
+        console.log(isLoggedIn)
+        if (!isLoggedIn) {
+          console.log(12344)
+          return await api.endpoints.getAllPosts.initiate();
+        } else {
+          return await api.endpoints.getPostsByUid.initiate({ uid, feedType });
+        }
+      },
+    }),
   }),
 });
 
@@ -341,4 +352,5 @@ export const {
   useGetNonMutualUsersQuery,
   useCreateTweetMutation,
   useDeletePostMutation,
+  useFetchPostsQuery,
 } = postsApi;

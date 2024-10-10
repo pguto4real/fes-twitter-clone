@@ -6,6 +6,7 @@ import Tweet from "@/components/Tweet";
 import { db } from "@/firebase";
 import { ArrowLeftIcon } from "@heroicons/react/outline";
 import { doc, getDoc } from "firebase/firestore";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import Moment from "react-moment";
@@ -35,7 +36,6 @@ export const getServerSideProps = async (context) => {
   };
 };
 const CommentsPage = ({ tweetData }) => {
- 
   const user = useSelector((state) => state.user);
   return (
     <div>
@@ -59,7 +59,10 @@ const CommentsPage = ({ tweetData }) => {
             <h1>Tweet</h1>
           </div>
           <div className="flex space-x-3 p-3  border-b border-gray-700">
-            <img
+            <Image
+            alt=""
+              width={44}
+              height={44}
               className="w-11 h-11 rounded-full object-cover"
               src={tweetData?.photoUrl || "/assets/avatar-placeholder.png/"}
             />
@@ -72,8 +75,11 @@ const CommentsPage = ({ tweetData }) => {
               </div>
               <span className="text-2xl">{tweetData?.tweet}</span>
               {tweetData?.image && (
-                <img
+                <Image
                   src={tweetData?.image}
+                  alt="Tweet image"
+                  width={320} // Set a width value suitable for your layout
+                  height={320} // Set a height value or calculate based on aspect ratio
                   className="object-cover rounded-md mt-3 max-h-80 border border-gray-700"
                 />
               )}
@@ -81,9 +87,12 @@ const CommentsPage = ({ tweetData }) => {
           </div>
           <div className="flex justify-between p-3   border-b border-gray-700">
             <div className="flex justify-center items-center space-x-2">
-              <img
+              <Image
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full object-cover"
                 src={user?.photoUrl}
+                alt=""
               />
               <h1 className="text-2xl text-gray-500">Tweet Your reply</h1>
             </div>
@@ -98,10 +107,13 @@ const CommentsPage = ({ tweetData }) => {
               </button>
             </div>
           </div>
-          {tweetData.comments?.map((comment) => {
+          {tweetData.comments?.map((comment,index) => {
             return (
-              <div className="flex space-x-3 p-3  border-b border-gray-700">
-                <img
+              <div key={index} className="flex space-x-3 p-3  border-b border-gray-700">
+                <Image
+                alt=""
+                  width={44}
+                  height={44}
                   className="w-11 h-11 rounded-full object-cover"
                   src={comment?.photoUrl}
                 />

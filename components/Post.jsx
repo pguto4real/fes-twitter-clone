@@ -9,6 +9,7 @@ import LoadingSpinner from "./LoadingSpinner";
 
 import Link from "next/link";
 import { useSelector } from "react-redux";
+import Image from "next/image";
 
 const Post = ({ post }) => {
   const [comment, setComment] = useState("");
@@ -29,7 +30,13 @@ const Post = ({ post }) => {
             href={`/${postOwner.username}`}
             className="w-8 rounded-full overflow-hidden"
           >
-            <img src={postOwner.profileImg || "/avatar-placeholder.png"} />
+            <Image
+            alt=""
+              src={postOwner.profileImg || "/avatar-placeholder.png"}
+              width={40}
+              height={40}
+            />
+            {/* <img src={postOwner.profileImg || "/avatar-placeholder.png"} /> */}
           </Link>
         </div>
         <div className="flex flex-col flex-1">
@@ -58,10 +65,11 @@ const Post = ({ post }) => {
           <div className="flex flex-col gap-3 overflow-hidden">
             <span>{post.text}</span>
             {post.img && (
-              <img
+              <Image
+              alt=""
                 src={post.img}
                 className="h-80 object-contain rounded-lg border border-gray-700"
-                alt=""
+                
               />
             )}
           </div>
@@ -97,12 +105,21 @@ const Post = ({ post }) => {
                       <div key={comment._id} className="flex gap-2 items-start">
                         <div className="avatar">
                           <div className="w-8 rounded-full">
-                            <img
+                            <Image
+                            alt=""
+                             width={40}
+                             height={40}
                               src={
                                 comment.user.profileImg ||
                                 "/avatar-placeholder.png"
                               }
                             />
+                            {/* <img
+                              src={
+                                comment.user.profileImg ||
+                                "/avatar-placeholder.png"
+                              }
+                            /> */}
                           </div>
                         </div>
                         <div className="flex flex-col">

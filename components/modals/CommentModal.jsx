@@ -14,6 +14,7 @@ import {
 import { arrayUnion, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useRouter } from "next/router";
+import Image from "next/image";
 const CommentModal = () => {
   const isOpen = useSelector((state) => state.modals.commentModalOpen);
   const user = useSelector((state) => state.user);
@@ -23,7 +24,7 @@ const CommentModal = () => {
   );
 
   const { id, name, photoUrl, tweet, username } = comentTweetDetails;
- 
+
   const dispatch = useDispatch();
 
   const [text, setText] = useState("");
@@ -77,11 +78,17 @@ const CommentModal = () => {
         </div>
         <div className="mt-8">
           <div className="flex space-x-3">
-            <img
+            <Image
+             width={44}
+             height={44}
               className="w-11 h-11 rounded-full object-cover"
               src={`${photoUrl || "/assets/avatar-placeholder.png/"}`}
               alt=""
             />
+            {/* className="w-11 h-11 rounded-full object-cover"
+              src={`${photoUrl || "/assets/avatar-placeholder.png/"}`}
+              alt=""
+            /> */}
             <div>
               <div className="flex space-x-1">
                 <h1 className="font-bold">{name}</h1>
@@ -97,10 +104,11 @@ const CommentModal = () => {
         </div>
         <div className="mt-11">
           <div className="flex space-x-3">
-            <img
+            <Image
+             width={44}
+             height={44}
               className="w-11 h-11 rounded-full object-cover"
-              src={`${user.photoUrl || "/assets/avatar-placeholder.png/"}`}
-              alt=""
+       alt=""
             />
             <div className="w-full">
               <textarea

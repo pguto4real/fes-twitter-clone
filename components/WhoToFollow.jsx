@@ -1,16 +1,23 @@
 import { BadgeCheckIcon } from "@heroicons/react/outline";
 import React from "react";
 import FollowButton from "./FollowButton";
+import Image from "next/image";
 
 const WhoToFollow = ({ user, currentUser }) => {
-
   return (
     <div className="p-3 flex justify-between">
       <div className="flex space-x-3">
-        <img
+        <Image
+        alt=""
+         width={44}
+         height={44}
           className="w-11 h-11 rounded-full object-cover"
           src={`${user.photoURL || "/assets/avatar-placeholder.png/"}`}
         />
+        {/* <img
+          className="w-11 h-11 rounded-full object-cover"
+          src={`${user.photoURL || "/assets/avatar-placeholder.png/"}`}
+        /> */}
         <div className="flex flex-col">
           <div className="flex space-x-1">
             <h1 className="font-bold">{user?.name?.split(" ")[0]}</h1>

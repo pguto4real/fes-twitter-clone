@@ -21,11 +21,12 @@ import {
   LinkIcon,
 } from "@heroicons/react/outline";
 import { PencilIcon } from "@heroicons/react/solid";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-const profile = () => {
+const Profile = () => {
   const currentUser = useSelector((state) => state.user);
 
   const [coverImg, setCoverImg] = useState(null);
@@ -34,7 +35,6 @@ const profile = () => {
 
   const router = useRouter();
   const userId = router.query.id;
-
 
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
@@ -108,11 +108,14 @@ const profile = () => {
                 <h1>{users.name}</h1>
               </div>
               <div className="relative group/cover">
-                <img
+                <Image
                   src={coverImg || users?.coverImage || "/assets/cover.png"}
+                  alt="Cover Image"
+                  width={1024} // Adjust width as needed
+                  height={208} // Adjust height to maintain aspect ratio (52 / 208 = 1 / 4)
                   className="h-52 w-full object-cover"
-                  alt="cover image"
                 />
+
                 {isMyProfile && (
                   <div
                     className="absolute top-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer opacity-0 group-hover/cover:opacity-100 transition duration-200"
@@ -137,12 +140,16 @@ const profile = () => {
                 {/* USER AVATAR */}
                 <div className="avatar absolute -bottom-16 left-4">
                   <div className="w-32 rounded-full relative group/avatar">
-                    <img
+                    <Image
                       src={
                         profileImg ||
                         users?.photoURL ||
                         "/avatar-placeholder.png"
                       }
+                      alt="Profile Image" // Add an alt attribute for accessibility
+                      layout="fill" // Use layout fill to cover the parent div
+                      objectFit="cover" // Cover the parent div with the image
+                      className="rounded-full" // Ensure the image is rounded
                     />
                     <div className="absolute top-5 right-3 p-1 bg-primary rounded-full group-hover/avatar:opacity-100 opacity-0 cursor-pointer">
                       {isMyProfile && (
@@ -159,18 +166,20 @@ const profile = () => {
                 {isMyProfile && <EditProfileModal />}
                 {!isMyProfile && (
                   <FollowButton
-                  currentUserId={currentUser.uid}
-                  targetUserId={users.uid}
-                  className={"bg-white text-black text-sm w-20 h-8 rounded-3xl"}
-                />
-                //   <button
-                //     className="btn btn-outline rounded-full btn-sm"
-                //     onClick={() => follow(currentUser?._id)}
-                //   >
-                //     {isPendingFollow && <LoadingSpinner size="sm" />}
-                //     {!isPending && amIFollowing && "UnFollow"}
-                // {!isPending && !amIFollowing && "Follow"}
-                //   </button>
+                    currentUserId={currentUser.uid}
+                    targetUserId={users.uid}
+                    className={
+                      "bg-white text-black text-sm w-20 h-8 rounded-3xl"
+                    }
+                  />
+                  //   <button
+                  //     className="btn btn-outline rounded-full btn-sm"
+                  //     onClick={() => follow(currentUser?._id)}
+                  //   >
+                  //     {isPendingFollow && <LoadingSpinner size="sm" />}
+                  //     {!isPending && amIFollowing && "UnFollow"}
+                  // {!isPending && !amIFollowing && "Follow"}
+                  //   </button>
                 )}
                 {(coverImg || profileImg) && (
                   <button
@@ -269,4 +278,4 @@ const profile = () => {
   );
 };
 
-export default profile;
+export default Profile;

@@ -59,42 +59,43 @@ export default function SignUpModal() {
       "12345678"
     );
   }
-  useEffect(() => {
-    const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) return;
-      const fetchUserData = async () => {
-        let userData = null;
-        try {
-          const userRef = doc(db, "users", currentUser.uid); // Reference to the user document in Firestore
-          const docSnap = await getDoc(userRef);
+  const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
+    if (!currentUser) return;
+    const fetchUserData = async () => {
+      let userData = null;
+      try {
+        const userRef = doc(db, "users", currentUser.uid); // Reference to the user document in Firestore
+        const docSnap = await getDoc(userRef);
 
-          if (docSnap.exists()) {
-            userData = docSnap.data();
-      
-            dispatch(
-              setUser({
-                uid: userData.uid,
-                email: userData.email,
-                name: userData.name,
-                link: userData.link,
-                username: userData.username,
-                coverImage: userData.coverImage,
-                bio: userData.bio,
-                followers: userData.followers,
-                following: userData.following,
-                photoUrl: userData.photoURL,
-              })
-            );
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
+        if (docSnap.exists()) {
+          userData = docSnap.data();
+    
+          dispatch(
+            setUser({
+              uid: userData.uid,
+              email: userData.email,
+              name: userData.name,
+              link: userData.link,
+              username: userData.username,
+              coverImage: userData.coverImage,
+              bio: userData.bio,
+              followers: userData.followers,
+              following: userData.following,
+              photoUrl: userData.photoURL,
+            })
+          );
         }
-      };
-      fetchUserData();
-      //handle redux actions
-    });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchUserData();
+    //handle redux actions
+  });
+  useEffect(() => {
+   unSubscribe()
     return unSubscribe;
-  }, []);
+  }, [unSubscribe]);
   return (
     <>
       {/* <Button >Open modal</Button> */}

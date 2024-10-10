@@ -30,7 +30,7 @@ const Trending = () => {
         />
       </div>
       <div className="bg-white bg-opacity-10 w-[300px] h-[500px] rounded-3xl mt-3">
-        <h1 className="font-bold text-xl p-3">What's happening</h1>
+        <h1 className="font-bold text-xl p-3">What&apos;s happening</h1>
         <div className="p-3 flex justify-between">
           <div>
             <p className="text-gray-500 text-xs">Trending in US</p>

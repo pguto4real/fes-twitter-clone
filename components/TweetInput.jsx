@@ -9,10 +9,9 @@ import {
 import React, { useRef, useState } from "react";
 import TweetInputIcons from "./TweetInputIcons";
 import { useSelector } from "react-redux";
-import {
-  serverTimestamp,
-} from "firebase/firestore";
+import { serverTimestamp } from "firebase/firestore";
 import { useCreateTweetMutation } from "@/redux/postsApi";
+import Image from "next/image";
 
 const TweetInput = () => {
   const user = useSelector((state) => state.user);
@@ -22,7 +21,6 @@ const TweetInput = () => {
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
   const [createTweet, { isLoading }] = useCreateTweetMutation();
-
 
   const handleSendTweet = async () => {
     const userData = {
@@ -52,11 +50,18 @@ const TweetInput = () => {
 
   return (
     <div className="flex space-x-3 p-3 border-b border-gray-700">
-      <img
+      <Image
+      alt=""
+        width={44}
+        height={44}
+        className="w-11 h-11 rounded-full object-cover"
+        src={`${user.photoUrl || "/assets/avatar-placeholder.png/"}`}
+      />
+      {/* <img
         className="w-11 h-11 rounded-full object-cover"
         src={`${user.photoUrl || "/assets/avatar-placeholder.png/"}`}
         alt=""
-      />
+      /> */}
 
       {!isLoading ? (
         <div className="w-full">
@@ -76,10 +81,12 @@ const TweetInput = () => {
               >
                 <XIcon className="h-5" />
               </div>
-              <img
+              <Image
                 src={image}
                 alt=""
                 className="rounded-2xl max-h-80 object-contain"
+                width={320} // Adjust width according to your design
+                height={320} // Adjust height according to your design
               />
             </div>
           )}
