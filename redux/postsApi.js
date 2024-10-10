@@ -79,7 +79,7 @@ export const postsApi = createApi({
     getAllPosts: builder.query({
       async queryFn() {
         try {
-          console.log("i got here");
+          
           const postsCollection = collection(db, "posts");
           const postsSnapshot = await getDocs(postsCollection);
           const posts = postsSnapshot.docs.map((doc) => ({
