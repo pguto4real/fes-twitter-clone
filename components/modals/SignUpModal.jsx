@@ -59,45 +59,44 @@ export default function SignUpModal() {
       "12345678"
     );
   }
-  const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
-    if (!currentUser) return;
-    const fetchUserData = async () => {
-      let userData = null;
-      try {
-        const userRef = doc(db, "users", currentUser.uid); // Reference to the user document in Firestore
-        const docSnap = await getDoc(userRef);
-
-        if (docSnap.exists()) {
-          userData = docSnap.data();
-    console.log(userData)
-    console.log('data reached here')
-          dispatch(
-            setUser({
-              uid: userData.uid,
-              email: userData.email,
-              name: userData.name,
-              link: userData.link,
-              username: userData.username,
-              coverImage: userData.coverImage,
-              bio: userData.bio,
-              followers: userData.followers,
-              following: userData.following,
-              photoUrl: userData.photoURL,
-            })
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-    fetchUserData();
-    //handle redux actions
-  });
+  
   useEffect(() => {
-    console.log(12345678)
-   unSubscribe()
+
+    const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) return;
+      const fetchUserData = async () => {
+        let userData = null;
+        try {
+          const userRef = doc(db, "users", currentUser.uid); // Reference to the user document in Firestore
+          const docSnap = await getDoc(userRef);
+  
+          if (docSnap.exists()) {
+            userData = docSnap.data();
+      console.log(userData)
+            dispatch(
+              setUser({
+                uid: userData.uid,
+                email: userData.email,
+                name: userData.name,
+                link: userData.link,
+                username: userData.username,
+                coverImage: userData.coverImage,
+                bio: userData.bio,
+                followers: userData.followers,
+                following: userData.following,
+                photoUrl: userData.photoURL,
+              })
+            );
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      };
+      fetchUserData();
+      //handle redux actions
+    });
     return unSubscribe;
-  }, [unSubscribe]);
+  }, []);
   return (
     <>
       {/* <Button >Open modal</Button> */}
@@ -117,7 +116,7 @@ export default function SignUpModal() {
             <button
               className="bg-white text-black w-full font-bold rounded-md
             text-lg p-2 "
-              onClick={handleGuestSignIn}
+              onClick={()=>handleGuestSignIn()}
             >
               Sign In as Guest
             </button>
