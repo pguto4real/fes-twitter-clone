@@ -93,6 +93,7 @@ export default function SignUpModal() {
     //handle redux actions
   });
   useEffect(() => {
+    console.log(12345678)
    unSubscribe()
     return unSubscribe;
   }, [unSubscribe]);

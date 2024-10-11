@@ -14,7 +14,7 @@ const inter = Inter({ subsets: ["latin"] });
 export default function Home() {
  
   const user = useSelector(state=>state.user)
-
+console.log(user)
   return (
     <div>
       <div
