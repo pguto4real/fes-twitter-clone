@@ -69,7 +69,8 @@ export default function SignUpModal() {
 
         if (docSnap.exists()) {
           userData = docSnap.data();
-    
+    console.log(userData)
+    console.log('data reached here')
           dispatch(
             setUser({
               uid: userData.uid,
