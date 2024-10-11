@@ -26,16 +26,16 @@ export default function SignUpModal() {
   async function handleSignUp() {
     const userCredentials = await createUserWithEmailAndPassword(
       auth,
-      email,
-      password
+      'a@a.com',
+      '123456789'
     );
     if (userCredentials) {
       const userDocRef = doc(db, "users", userCredentials.user.uid);
       await setDoc(userDocRef, {
         uid: userCredentials.user.uid,
         email: userCredentials.user.email,
-        name: name,
-        username: userName,
+        name: 'a a',
+        username: 'a',
         coverImage: "",
         profileImage: "",
         bio: "",
