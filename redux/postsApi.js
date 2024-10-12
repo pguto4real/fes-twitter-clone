@@ -15,6 +15,7 @@ import {
   addDoc,
   serverTimestamp,
   deleteDoc,
+  limit,
 } from "firebase/firestore";
 import { db, storage } from "../firebase";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
@@ -79,12 +80,14 @@ export const postsApi = createApi({
     getAllPosts: builder.query({
       async queryFn() {
         try {
-          
           const postsCollection = collection(db, "posts");
           const postsSnapshot = await getDocs(postsCollection);
           const posts = postsSnapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
+            timestamp: doc.data().timestamp
+              ? doc.data().timestamp.toDate().toISOString()
+              : null,
           }));
           return { data: posts };
         } catch (error) {
@@ -97,7 +100,39 @@ export const postsApi = createApi({
         try {
           let q;
           const postsRef = collection(db, "posts");
+          if (!uid) {
+            q = query(postsRef, orderBy("timestamp", "desc"), limit(5));
 
+            return new Promise((resolve) => {
+              const unsubscribe = onSnapshot(
+                q,
+                (querySnapshot) => {
+                  // Log the number of documents returned
+
+                  const posts = querySnapshot.docs.map((doc) => {
+                    const data = doc.data();
+
+                    return {
+                      id: doc.id,
+                      ...data,
+                      timestamp: data.timestamp?.toDate().toISOString() || null,
+                    };
+                  });
+
+                  // Resolve with posts data
+                  resolve({ data: posts });
+                },
+                (error) => {
+                  resolve({
+                    error: { status: "FETCH_ERROR", message: error.message },
+                  });
+                }
+              );
+
+              // Return the unsubscribe function
+              return () => unsubscribe();
+            });
+          }
           // Handle based on feed type
           if (feedType === "posts") {
             // Fetch posts by current user and users they follow
@@ -117,6 +152,22 @@ export const postsApi = createApi({
               where("uid", "==", uid),
               orderBy("timestamp", "desc")
             );
+            return new Promise((resolve) => {
+              const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const posts = querySnapshot.docs.map((doc) => {
+                  const data = doc.data();
+
+                  return {
+                    id: doc.id,
+                    ...data,
+                    timestamp: data.timestamp?.toDate().toISOString() || null,
+                  };
+                });
+                resolve({ data: posts });
+              });
+
+              return () => unsubscribe();
+            });
           } else if (feedType === "likes") {
             // Get posts liked by the current user
             q = query(
@@ -124,15 +175,32 @@ export const postsApi = createApi({
               where("likes", "array-contains", uid),
               orderBy("timestamp", "desc")
             );
+            return new Promise((resolve) => {
+              const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const posts = querySnapshot.docs.map((doc) => {
+                  const data = doc.data();
+
+                  return {
+                    id: doc.id,
+                    ...data,
+                    timestamp: data.timestamp?.toDate().toISOString() || null,
+                  };
+                });
+                resolve({ data: posts });
+              });
+
+              return () => unsubscribe();
+            });
           } else if (feedType === "index") {
+   
             const userDoc = await getDoc(doc(db, "users", uid));
             if (!userDoc.exists()) {
               return {
                 error: { status: "NOT_FOUND", message: "User not found" },
               };
             }
-            // console.log(uid)
-            // console.log(userDoc)
+          
+            
             const { following = [] } = userDoc.data();
 
             q = query(
@@ -140,6 +208,31 @@ export const postsApi = createApi({
               where("uid", "in", [...following, uid]),
               orderBy("timestamp", "desc")
             );
+
+            // console.log("Executing Firestore query:", {
+            //   collection: "posts",
+            //   filters: [
+            //     { field: "uid", operator: "in", value: [...following, uid] },
+            //     { field: "status", operator: "==", value: "active" },
+            //   ],
+            // });
+            return new Promise((resolve) => {
+              const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const posts = querySnapshot.docs.map((doc) => {
+                  const data = doc.data();
+              
+                  return {
+                    id: doc.id,
+                    ...data,
+                    timestamp: data.timestamp?.toDate().toISOString() || null,
+                  };
+                });
+                // console.log(posts);
+                resolve({ data: posts });
+              });
+
+              return () => unsubscribe();
+            });
           } else {
             return {
               error: {
@@ -148,23 +241,6 @@ export const postsApi = createApi({
               },
             };
           }
-
-          return new Promise((resolve) => {
-            const unsubscribe = onSnapshot(q, (querySnapshot) => {
-              const posts = querySnapshot.docs.map((doc) => {
-                const data = doc.data();
-
-                return {
-                  id: doc.id,
-                  ...data,
-                  timestamp: data.timestamp?.toDate().toISOString() || null,
-                };
-              });
-              resolve({ data: posts });
-            });
-
-            return () => unsubscribe();
-          });
         } catch (error) {
           return { error: { status: "FETCH_ERROR", message: error.message } };
         }
@@ -190,8 +266,8 @@ export const postsApi = createApi({
           return { error: { status: "UPDATE_ERROR", message: error.message } };
         }
       },
-      invalidatesTags: (result, error, { postId }) => [
-        { type: "UserPosts", id: postId },
+      invalidatesTags: (result, error, { currentUserId }) => [
+        { type: "UserPosts", id: currentUserId },
         "UserFollowStatus",
       ],
     }),
@@ -330,7 +406,11 @@ export const postsApi = createApi({
                       : null,
                   }));
 
-                  resolve({ data: allUsers });
+                  const randomUsers = allUsers
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, 3);
+
+                  resolve({ data: randomUsers });
                 },
                 (error) => {
                   console.error("Error onSnapshot:", error);
