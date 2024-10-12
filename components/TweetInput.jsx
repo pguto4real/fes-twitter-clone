@@ -8,10 +8,11 @@ import {
 } from "@heroicons/react/outline";
 import React, { useRef, useState } from "react";
 import TweetInputIcons from "./TweetInputIcons";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { serverTimestamp } from "firebase/firestore";
 import { useCreateTweetMutation } from "@/redux/postsApi";
 import Image from "next/image";
+import { openLogInModal } from "@/redux/modalSlice";
 
 const TweetInput = () => {
   const user = useSelector((state) => state.user);
@@ -21,8 +22,13 @@ const TweetInput = () => {
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
   const [createTweet, { isLoading }] = useCreateTweetMutation();
+  const dispatch = useDispatch();
 
   const handleSendTweet = async () => {
+    if (!user.username) {
+      dispatch(openLogInModal());
+      return;
+    }
     const userData = {
       username: user.username,
       name: user.name,

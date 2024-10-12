@@ -16,11 +16,11 @@ import {
 } from "@/redux/modalSlice";
 import Link from "next/link";
 import { db } from "@/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 import {
-  doc,
-  onSnapshot,
-} from "firebase/firestore";
-import { useDeletePostMutation, useUpdatePostLikeMutation } from "@/redux/postsApi";
+  useDeletePostMutation,
+  useUpdatePostLikeMutation,
+} from "@/redux/postsApi";
 
 const Tweet = ({ data, refreshPosts, isRefreshed }) => {
   const dispatch = useDispatch();
@@ -56,11 +56,11 @@ const Tweet = ({ data, refreshPosts, isRefreshed }) => {
   const [updatePostLike] = useUpdatePostLikeMutation();
 
   const handleLike = async () => {
-    const userId = user.uid
+    const userId = user.uid;
     const postId = data?.tweetId;
     await updatePostLike({ postId, userId, isLiked });
   };
-  
+
   const isAuthorized = user.uid === data?.uid;
 
   const [deletePost, { isLoading, error }] = useDeletePostMutation();
@@ -75,16 +75,16 @@ const Tweet = ({ data, refreshPosts, isRefreshed }) => {
   return (
     <div className="border-b border-gray-700">
       {/* <Link href={`${data?.tweetId}`}> */}
-        <TweetHeader
-          username={data?.username}
-          name={data?.name}
-          timestamp={data?.timestamp}
-          text={data?.tweet}
-          photoUrl={data?.photoUrl}
-          tweetId={data?.tweetId}
-          image={data?.image}
-          uid={data?.uid}
-        />
+      <TweetHeader
+        username={data?.username}
+        name={data?.name}
+        timestamp={data?.timestamp}
+        text={data?.tweet}
+        photoUrl={data?.photoUrl}
+        tweetId={data?.tweetId}
+        image={data?.image}
+        uid={data?.uid}
+      />
       {/* </Link> */}
       <div className="p-3 ml-16 text-gray-500 flex space-x-14">
         <div
@@ -111,7 +111,13 @@ const Tweet = ({ data, refreshPosts, isRefreshed }) => {
         </div>
         <div
           className="flex justify-center items-center space-x-2"
-          onClick={handleLike}
+          onClick={() => {
+            if (!user.username) {
+              dispatch(openLogInModal());
+              return;
+            }
+            handleLike();
+          }}
         >
           {isLiked ? (
             <FilledHeart className="w-5 cursor-pointer text-pink-500" />

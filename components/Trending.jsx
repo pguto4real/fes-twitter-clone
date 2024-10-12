@@ -1,4 +1,3 @@
-
 import { DotsHorizontalIcon, SearchIcon } from "@heroicons/react/outline";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -8,13 +7,15 @@ import { useGetNonMutualUsersQuery } from "@/redux/postsApi";
 const Trending = () => {
   const currentUser = useSelector((state) => state.user);
   const [unfollowedUsers, setUnfollowedUsers] = useState([]);
-  // const [isLoading, setIsLoading] = useState(true);
-  const [followStatus, setFollowStatus] = useState(false);
-  // const { nonMutualUsers, isLoadings } = useNonMutualUsers(currentUser.uid,followStatus);
-  const { data: nonMutualUsers = [], isLoading, error } = useGetNonMutualUsersQuery(currentUser.uid);
 
-  
-  // console.log(nonMutualUsers);
+  const [followStatus, setFollowStatus] = useState(false);
+
+  const {
+    data: nonMutualUsers ,
+    isLoading,
+    error,
+  } = useGetNonMutualUsersQuery(currentUser.uid);
+
   return (
     <div className="hidden lg:flex flex-col ml-7 mt-4 ">
       <div
@@ -84,10 +85,9 @@ const Trending = () => {
       </div>
       <div className="bg-white bg-opacity-10 w-[300px] h-[300px] rounded-3xl mt-3">
         <h1 className="font-bold text-xl p-3">Who to follow</h1>
-        {nonMutualUsers.data?.map((user,index) => (
-          <WhoToFollow key ={index} user={user} currentUser={currentUser}/>
+        {nonMutualUsers?.data?.map((user, index) => (
+          <WhoToFollow key={index} user={user} currentUser={currentUser} />
         ))}
-
       </div>
     </div>
   );
